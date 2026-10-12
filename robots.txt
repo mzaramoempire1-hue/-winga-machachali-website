@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://mzaramoempire1-hue.github.io/-winga-machachali-website/sitemap.xml
