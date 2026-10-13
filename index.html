@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Winga Machachali - Soko Kuu la Kuku Tanzania</title>
-    <meta name="description" content="Winga Machachali ni soko kuu la kidijitali la kuku, vifaranga, na mayai Tanzania. Uza kwa uhakika na nunua kwa uaminifu. Pakua App aufanya biashara mtandaoni!">
+    <meta name="description" content="Winga Machachali ni soko kuu la kidijitali la kuku, vifaranga, na mayai Tanzania. Uza kwa uhakika na nunua kwa uaminifu. Pakua App au fanya biashara mtandaoni!">
     <meta name="keywords" content="Winga Machachali, soko la kuku, kuku wa kienyeji, kuku wa broiler, vifaranga, mayai tanzania, uza kuku online">
     <meta name="author" content="Winga Machachali">
     <meta name="google-site-verification" content="KCtS-0coJdyEllXh9f63KTLgr-VED_ZhhuhI86AqiiA" />
@@ -98,7 +98,7 @@
             <div class="search-bar-container">
                 <div class="search-input-wrapper">
                     <i class="fas fa-search search-icon"></i>
-                    <input type="text" id="searchInput" placeholder="Tafuta kuku, aina, au mkoa...">
+                    <input type="text" id="searchInput" aria-label="Tafuta kuku" placeholder="Tafuta kuku, aina, au mkoa...">
                     <button id="clearSearch" style="display: none;"><i class="fas fa-times"></i></button>
                 </div>
             </div>
@@ -132,7 +132,7 @@
         <div class="container">
             <div class="section-title">
                 <h2>Weka Tangazo Lako <span>Sokoni</span></h2>
-                <p>Uza kuku, vifaranga, au mayai yako kwa urahisi kabisa hapa.</p>
+                <p>Uza kuku, vifaranga, au mayai yako kwa urahisi. Tangazo lako litaonekana moja kwa moja kwenye App na Website na Admin ataliona.</p>
             </div>
             <div class="form-card">
                 <form id="postChickenForm">
@@ -188,12 +188,53 @@
                         <textarea id="postDescription" rows="3" placeholder="Eleza kwa ufasaha ubora wa kuku wako..."></textarea>
                     </div>
                     <button type="submit" class="btn btn-primary btn-large" style="width: 100%; justify-content: center;">
-                        <i class="fas fa-paper-plane"></i> Chapisha Tangazo Sokoni
+                        <i class="fas fa-paper-plane"></i> Chapisha Tangazo Sokoni & App
                     </button>
                 </form>
             </div>
         </div>
     </section>
+
+    <!-- ORDER MODAL -->
+    <div id="orderModal" class="modal-overlay" style="display: none;">
+        <div class="modal-card">
+            <button id="closeOrderModal" class="modal-close-btn"><i class="fas fa-times"></i></button>
+            <div class="modal-header">
+                <h3><i class="fas fa-shopping-cart" style="color: var(--primary-orange);"></i> Weka Oda ya Bidhaa</h3>
+                <p id="orderItemTitle" class="order-item-title">Kuku wa Kienyeji</p>
+                <p id="orderItemPrice" class="order-item-price">TZS 15,000</p>
+            </div>
+            <form id="orderForm">
+                <input type="hidden" id="orderChickenId">
+                <input type="hidden" id="orderChickenTitleHidden">
+                <input type="hidden" id="orderPricePerUnit">
+
+                <div class="form-group">
+                    <label for="orderCustomerName">Jina Lako Buu (Customer Name)</label>
+                    <input type="text" id="orderCustomerName" required placeholder="Mf: Juma Hamisi">
+                </div>
+                <div class="form-group">
+                    <label for="orderCustomerPhone">Namba ya Simu ya Malipo/Kupigiwa</label>
+                    <input type="text" id="orderCustomerPhone" required placeholder="07XXXXXXXX">
+                </div>
+                <div class="form-group">
+                    <label for="orderCustomerLocation">Mkoa na Eneo Unapokaa</label>
+                    <input type="text" id="orderCustomerLocation" required placeholder="Mf: Dar es Salaam, Kimara">
+                </div>
+                <div class="form-group">
+                    <label for="orderQuantity">Idadi Unayotaka (Uniti)</label>
+                    <input type="number" id="orderQuantity" min="1" value="1" required>
+                </div>
+                <div class="order-total-preview">
+                    <span>Jumla ya Gharama:</span>
+                    <strong id="orderTotalPricePreview">TZS 15,000</strong>
+                </div>
+                <button type="submit" class="btn btn-primary btn-large" style="width: 100%; justify-content: center; margin-top: 15px;">
+                    <i class="fas fa-check-circle"></i> Tuma Oda Hapa (Itaingia kwa Admin)
+                </button>
+            </form>
+        </div>
+    </div>
 
     <!-- How to Install APK Guide -->
     <section id="install-guide" class="install-guide">

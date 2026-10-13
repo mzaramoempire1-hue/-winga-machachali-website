@@ -1,10 +1,10 @@
 // Import Firebase SDK via CDN
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-import { getFirestore, collection, addDoc, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+import { getFirestore, collection, addDoc, doc, setDoc, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
 // Firebase Configuration (Decoded dynamically for Firebase Web SDK)
 const firebaseConfig = {
-    apiKey: atob("QUl6YVN5RFhweHNFbFlVbEJPZFZ2NTI0MEtDWWRFTzJ0MTZYQmhr"),
+    apiKey: atob("QUl6YVN5RFhweHNFbFlVbEJPZFZ2NTI0MEtDWWRFT3QxNlhCaGs="),
     authDomain: "com-mzaramo-wingamachach-73b22.firebaseapp.com",
     projectId: "com-mzaramo-wingamachach-73b22",
     storageBucket: "com-mzaramo-wingamachach-73b22.firebasestorage.app",
@@ -30,6 +30,18 @@ const clearSearch = document.getElementById("clearSearch");
 const categoriesFilter = document.getElementById("categoriesFilter");
 const postChickenForm = document.getElementById("postChickenForm");
 
+// Order Modal Elements
+const orderModal = document.getElementById("orderModal");
+const closeOrderModal = document.getElementById("closeOrderModal");
+const orderForm = document.getElementById("orderForm");
+const orderItemTitle = document.getElementById("orderItemTitle");
+const orderItemPrice = document.getElementById("orderItemPrice");
+const orderChickenId = document.getElementById("orderChickenId");
+const orderChickenTitleHidden = document.getElementById("orderChickenTitleHidden");
+const orderPricePerUnit = document.getElementById("orderPricePerUnit");
+const orderQuantity = document.getElementById("orderQuantity");
+const orderTotalPricePreview = document.getElementById("orderTotalPricePreview");
+
 // Smooth scrolling for navigation links
 document.querySelectorAll('a[href^="#"]').forEach(anchor => {
     anchor.addEventListener('click', function (e) {
@@ -51,8 +63,8 @@ function initFirestoreListener() {
 
     getDocs(q).then((snapshot) => {
         allListings = [];
-        snapshot.forEach((doc) => {
-            allListings.push({ id: doc.id, ...doc.data() });
+        snapshot.forEach((docSnap) => {
+            allListings.push({ id: docSnap.id, ...docSnap.data() });
         });
         renderListings();
     }).catch((error) => {
@@ -93,7 +105,8 @@ function renderListings() {
 
     noListings.style.display = "none";
     listingsGrid.innerHTML = filtered.map(item => {
-        const priceFormatted = Number(item.price || 0).toLocaleString() + " TZS";
+        const priceNum = Number(item.price || 0);
+        const priceFormatted = priceNum.toLocaleString() + " TZS";
         const imageUrl = item.imageUrl && item.imageUrl.startsWith("http")
             ? item.imageUrl
             : "https://images.unsplash.com/photo-1548550023-2bdb3c5beed7?auto=format&fit=crop&w=600&q=80";
@@ -118,14 +131,96 @@ function renderListings() {
                     <div style="font-size: 0.8rem; color: #aaa; margin-top: 4px;">
                         Muuzaji: <strong>${item.farmerName || 'Mfugaji'}</strong>
                     </div>
-                    <a href="https://wa.me/255${phone.replace(/^0/, '')}?text=${whatsappMsg}" target="_blank" class="listing-btn">
-                        <i class="fab fa-whatsapp"></i> Wasiliana na Muuzaji
-                    </a>
+                    <div class="listing-actions">
+                        <button class="order-btn-action" onclick="openOrderModal('${item.id || ''}', '${escapeHtml(item.title || '')}', ${priceNum})">
+                            <i class="fas fa-shopping-cart"></i> Weka Oda
+                        </button>
+                        <a href="https://wa.me/255${phone.replace(/^0/, '')}?text=${whatsappMsg}" target="_blank" class="whatsapp-btn-action">
+                            <i class="fab fa-whatsapp"></i>
+                        </a>
+                    </div>
                 </div>
             </div>
         `;
     }).join("");
 }
+
+// Utility to escape HTML strings
+function escapeHtml(text) {
+    return text.replace(/'/g, "\\'").replace(/"/g, '&quot;');
+}
+
+// Open Order Modal
+window.openOrderModal = function(id, title, price) {
+    orderChickenId.value = id;
+    orderChickenTitleHidden.value = title;
+    orderPricePerUnit.value = price;
+    orderItemTitle.innerText = title;
+    orderItemPrice.innerText = Number(price).toLocaleString() + " TZS";
+    orderQuantity.value = 1;
+    updateTotalPricePreview();
+    orderModal.style.display = "flex";
+};
+
+// Update Order Total Preview
+function updateTotalPricePreview() {
+    const unitPrice = parseFloat(orderPricePerUnit.value) || 0;
+    const qty = parseInt(orderQuantity.value) || 1;
+    const total = unitPrice * qty;
+    orderTotalPricePreview.innerText = total.toLocaleString() + " TZS";
+}
+
+orderQuantity.addEventListener("input", updateTotalPricePreview);
+
+closeOrderModal.addEventListener("click", () => {
+    orderModal.style.display = "none";
+});
+
+window.addEventListener("click", (e) => {
+    if (e.target === orderModal) {
+        orderModal.style.display = "none";
+    }
+});
+
+// Submit Order to Firestore "orders" collection
+orderForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    const id = orderChickenId.value;
+    const title = orderChickenTitleHidden.value;
+    const unitPrice = parseFloat(orderPricePerUnit.value) || 0;
+    const name = document.getElementById("orderCustomerName").value;
+    const phone = document.getElementById("orderCustomerPhone").value;
+    const location = document.getElementById("orderCustomerLocation").value;
+    const qty = document.getElementById("orderQuantity").value;
+    const totalPrice = unitPrice * (parseInt(qty) || 1);
+
+    const generatedOrderId = "WEB-" + Math.random().toString(36).substring(2, 10).toUpperCase();
+
+    const orderData = {
+        orderId: generatedOrderId,
+        chickenTitle: title,
+        chickenId: id,
+        pricePerUnit: unitPrice,
+        quantity: qty.toString(),
+        totalPrice: totalPrice,
+        customerName: name,
+        customerPhone: phone,
+        customerLocation: location,
+        status: "Pending",
+        createdAt: Date.now()
+    };
+
+    try {
+        await setDoc(doc(db, "orders", generatedOrderId), orderData);
+        alert("Oda yako imetumwa kwa mafanikio! Admin ataiona kwenye App na kuifanyia kazi mara moja.");
+        orderForm.reset();
+        orderModal.style.display = "none";
+    } catch (error) {
+        console.error("Error creating order:", error);
+        alert("Imeshindikana kutuma oda. Tafadhali jaribu tena.");
+    }
+});
 
 // Search Event Listeners
 searchInput.addEventListener("input", (e) => {
@@ -182,7 +277,7 @@ if (postChickenForm) {
 
         try {
             await addDoc(collection(db, "chickens"), newListing);
-            alert("Tangazo limechapishwa kwa mafanikio! Sasa linaonekana kwenye App na Website.");
+            alert("Tangazo limechapishwa kwa mafanikio! Sasa linaonekana kwenye App na Website na Admin ataliona.");
             postChickenForm.reset();
             initFirestoreListener();
             document.getElementById("marketplace").scrollIntoView({ behavior: 'smooth' });
