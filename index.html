@@ -141,13 +141,22 @@
                         </div>
                     </div>
 
-                    <!-- SEHEMU YA KUPAKIA PICHA (IMAGE FILE UPLOAD) -->
+                    <!-- SEHEMU YA KUPAKIA PICHA (CUSTOM LARGE UPLOAD BOX) -->
                     <div class="form-group full-width">
-                        <label for="postImageFile"><i class="fas fa-camera" style="color: var(--primary-orange);"></i> Pakia Picha ya Kuku / Bidhaa Yako</label>
-                        <input type="file" id="postImageFile" accept="image/*" class="file-upload-input">
+                        <label class="upload-label"><i class="fas fa-camera" style="color: var(--primary-orange);"></i> Pakia Picha ya Kuku / Bidhaa Yako</label>
+                        <label for="postImageFile" class="custom-upload-zone" id="uploadZone">
+                            <span class="upload-icon-wrapper">
+                                <i class="fas fa-cloud-upload-alt"></i>
+                            </span>
+                            <span class="upload-text">
+                                <strong>Bonyeza Hapa Kuchagua / Kupiga Picha</strong>
+                                <small>Inakubali picha kutoka kwenye Galari au Kamera</small>
+                            </span>
+                            <input type="file" id="postImageFile" accept="image/*" style="display: none;">
+                        </label>
                         <div id="imagePreviewBox" class="image-preview-box" style="display: none;">
                             <img id="imagePreviewImg" src="" alt="Picha Iliyochaguliwa">
-                            <button type="button" id="removeImageBtn" class="remove-img-btn"><i class="fas fa-times"></i> Ondoa Picha</button>
+                            <button type="button" id="removeImageBtn" class="remove-img-btn"><i class="fas fa-trash-alt"></i> Ondoa Picha</button>
                         </div>
                     </div>
 
