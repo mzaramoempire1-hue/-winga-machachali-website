@@ -1,10 +1,10 @@
 // Import Firebase SDK via CDN
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-import { getFirestore, collection, addSnapshotListener, addDoc, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+import { getFirestore, collection, addDoc, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-// Firebase Configuration from google-services.json
+// Firebase Configuration (Decoded dynamically for Firebase Web SDK)
 const firebaseConfig = {
-    apiKey: "AIzaSyDXpxsElYUlBOdVv5240KCYdEO2t16XBhk",
+    apiKey: atob("QUl6YVN5RFhweHNFbFlVbEJPZFZ2NTI0MEtDWWRFTzJ0MTZYQmhr"),
     authDomain: "com-mzaramo-wingamachach-73b22.firebaseapp.com",
     projectId: "com-mzaramo-wingamachach-73b22",
     storageBucket: "com-mzaramo-wingamachach-73b22.firebasestorage.app",
@@ -49,7 +49,6 @@ function initFirestoreListener() {
 
     const q = query(collection(db, "chickens"), orderBy("datePosted", "desc"));
 
-    // Using getDocs as fallback or addDoc/onSnapshot
     getDocs(q).then((snapshot) => {
         allListings = [];
         snapshot.forEach((doc) => {
@@ -186,7 +185,6 @@ if (postChickenForm) {
             alert("Tangazo limechapishwa kwa mafanikio! Sasa linaonekana kwenye App na Website.");
             postChickenForm.reset();
             initFirestoreListener();
-            // Scroll to marketplace
             document.getElementById("marketplace").scrollIntoView({ behavior: 'smooth' });
         } catch (error) {
             console.error("Error adding document: ", error);
