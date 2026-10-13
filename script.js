@@ -1,6 +1,6 @@
 // Import Firebase SDK via CDN
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-import { getFirestore, collection, addDoc, doc, setDoc, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+import { getFirestore, collection, addDoc, doc, setDoc, deleteDoc, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
 // Firebase Configuration (Decoded dynamically for Firebase Web SDK)
 const firebaseConfig = {
@@ -62,6 +62,23 @@ const imageViewerModal = document.getElementById("imageViewerModal");
 const fullImageViewerImg = document.getElementById("fullImageViewerImg");
 const closeImageViewerModal = document.getElementById("closeImageViewerModal");
 
+// Admin Modal Elements
+const adminLoginModal = document.getElementById("adminLoginModal");
+const closeAdminLoginModal = document.getElementById("closeAdminLoginModal");
+const adminLoginForm = document.getElementById("adminLoginForm");
+const adminPinInput = document.getElementById("adminPinInput");
+const openAdminLoginLink = document.getElementById("openAdminLoginLink");
+const openAdminLoginFooter = document.getElementById("openAdminLoginFooter");
+
+const adminDashboardModal = document.getElementById("adminDashboardModal");
+const closeAdminDashboardModal = document.getElementById("closeAdminDashboardModal");
+const tabOrdersBtn = document.getElementById("tabOrdersBtn");
+const tabListingsBtn = document.getElementById("tabListingsBtn");
+const adminOrdersContent = document.getElementById("adminOrdersContent");
+const adminListingsContent = document.getElementById("adminListingsContent");
+const adminOrdersCount = document.getElementById("adminOrdersCount");
+const adminListingsCount = document.getElementById("adminListingsCount");
+
 // Toggle Nav Menu on Mobile
 if (menuToggleBtn && navLinks) {
     menuToggleBtn.addEventListener("click", () => {
@@ -95,6 +112,155 @@ document.querySelectorAll('a[href^="#"]').forEach(anchor => {
     });
 });
 
+// Admin Login Handlers
+if (openAdminLoginLink) {
+    openAdminLoginLink.addEventListener("click", () => {
+        adminLoginModal.style.display = "flex";
+        if (navLinks && window.innerWidth <= 768) navLinks.style.display = "none";
+    });
+}
+if (openAdminLoginFooter) {
+    openAdminLoginFooter.addEventListener("click", () => {
+        adminLoginModal.style.display = "flex";
+    });
+}
+if (closeAdminLoginModal) {
+    closeAdminLoginModal.addEventListener("click", () => {
+        adminLoginModal.style.display = "none";
+    });
+}
+if (closeAdminDashboardModal) {
+    closeAdminDashboardModal.addEventListener("click", () => {
+        adminDashboardModal.style.display = "none";
+    });
+}
+
+adminLoginForm.addEventListener("submit", (e) => {
+    e.preventDefault();
+    const pin = adminPinInput.value.trim();
+    if (pin === "2026" || pin === "admin123") {
+        adminLoginModal.style.display = "none";
+        adminPinInput.value = "";
+        openAdminDashboard();
+    } else {
+        alert("PIN si sahihi! Jaribu tena (PIN ya jaribio ni 2026).");
+    }
+});
+
+// Open Admin Dashboard & Fetch Data
+async function openAdminDashboard() {
+    adminDashboardModal.style.display = "flex";
+    await loadAdminData();
+}
+
+async function loadAdminData() {
+    adminOrdersContent.innerHTML = "<p style='text-align:center; padding:20px; color:var(--text-gray);'><i class='fas fa-spinner fa-spin'></i> Inapakia oda...</p>";
+    adminListingsContent.innerHTML = "<p style='text-align:center; padding:20px; color:var(--text-gray);'><i class='fas fa-spinner fa-spin'></i> Inapakia matangazo...</p>";
+
+    try {
+        // Fetch Orders
+        const ordersSnap = await getDocs(query(collection(db, "orders"), orderBy("createdAt", "desc")));
+        const orders = [];
+        ordersSnap.forEach(docSnap => {
+            orders.push({ id: docSnap.id, ...docSnap.data() });
+        });
+        adminOrdersCount.innerText = orders.length;
+
+        if (orders.length === 0) {
+            adminOrdersContent.innerHTML = "<p style='text-align:center; padding:30px; color:var(--text-gray);'>Hakuna oda zilizowekwa bado.</p>";
+        } else {
+            adminOrdersContent.innerHTML = orders.map(o => `
+                <div style="background:#121212; border:1px solid var(--card-border); border-radius:10px; padding:15px; margin-bottom:12px;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                        <strong style="color:var(--primary-orange);">${o.orderId || 'ODA'}</strong>
+                        <span style="font-size:0.75rem; background:rgba(255,152,0,0.15); color:var(--primary-orange); padding:2px 8px; border-radius:4px;">${o.status || 'Pending'}</span>
+                    </div>
+                    <p style="font-size:0.9rem; font-weight:600; margin-bottom:4px;">${o.chickenTitle || 'Kuku'}</p>
+                    <p style="font-size:0.8rem; color:var(--text-gray);">Mteja: <strong>${o.customerName || ''}</strong> (${o.customerPhone || ''})</p>
+                    <p style="font-size:0.8rem; color:var(--text-gray);">Eneo: ${o.customerLocation || ''} | Idadi: ${o.quantity || '1'}</p>
+                    <p style="font-size:0.85rem; font-weight:700; color:var(--primary-orange); margin-top:4px;">Jumla: ${(o.totalPrice || 0).toLocaleString()} TZS</p>
+                    <div style="display:flex; gap:8px; margin-top:10px;">
+                        <button onclick="window.deleteOrder('${o.id}')" style="background:#E74C3C; color:#fff; border:none; padding:6px 12px; border-radius:6px; font-size:0.75rem; cursor:pointer;"><i class="fas fa-trash"></i> Futa Oda</button>
+                    </div>
+                </div>
+            `).join("");
+        }
+
+        // Fetch Listings
+        const listingsSnap = await getDocs(query(collection(db, "chickens"), orderBy("datePosted", "desc")));
+        const listings = [];
+        listingsSnap.forEach(docSnap => {
+            listings.push({ id: docSnap.id, ...docSnap.data() });
+        });
+        adminListingsCount.innerText = listings.length;
+
+        if (listings.length === 0) {
+            adminListingsContent.innerHTML = "<p style='text-align:center; padding:30px; color:var(--text-gray);'>Hakuna matangazo sokoni kwa sasa.</p>";
+        } else {
+            adminListingsContent.innerHTML = listings.map(l => `
+                <div style="display:flex; align-items:center; justify-content:space-between; background:#121212; border:1px solid var(--card-border); border-radius:10px; padding:12px; margin-bottom:10px;">
+                    <div>
+                        <strong style="font-size:0.9rem; color:var(--text-white);">${l.title || 'Tangazo'}</strong>
+                        <p style="font-size:0.8rem; color:var(--primary-orange);">${Number(l.price || 0).toLocaleString()} TZS • ${l.category || ''} (${l.location || ''})</p>
+                        <p style="font-size:0.75rem; color:var(--text-gray);">Muuzaji: ${l.farmerName || ''} (${l.farmerPhone || ''})</p>
+                    </div>
+                    <button onclick="window.deleteListing('${l.id}')" style="background:#E74C3C; color:#fff; border:none; padding:8px 12px; border-radius:6px; font-size:0.8rem; cursor:pointer;"><i class="fas fa-trash"></i></button>
+                </div>
+            `).join("");
+        }
+
+    } catch (error) {
+        console.error("Error loading admin data:", error);
+    }
+}
+
+// Admin Delete Actions
+window.deleteOrder = async function(orderId) {
+    if (confirm("Una uhakika unataka kufuta oda hii?")) {
+        try {
+            await deleteDoc(doc(db, "orders", orderId));
+            alert("Oda imefutwa.");
+            loadAdminData();
+        } catch (e) {
+            alert("Imeshindikana kufuta oda.");
+        }
+    }
+};
+
+window.deleteListing = async function(listingId) {
+    if (confirm("Una uhakika unataka kufuta tangazo hili sokoni?")) {
+        try {
+            await deleteDoc(doc(db, "chickens", listingId));
+            alert("Tangazo limefutwa.");
+            loadAdminData();
+            initFirestoreListener();
+        } catch (e) {
+            alert("Imeshindikana kufuta tangazo.");
+        }
+    }
+};
+
+// Admin Tabs Switching
+if (tabOrdersBtn && tabListingsBtn) {
+    tabOrdersBtn.addEventListener("click", () => {
+        tabOrdersBtn.style.background = "var(--primary-orange)";
+        tabOrdersBtn.style.color = "#000";
+        tabListingsBtn.style.background = "var(--card-dark)";
+        tabListingsBtn.style.color = "var(--text-white)";
+        adminOrdersContent.style.display = "block";
+        adminListingsContent.style.display = "none";
+    });
+
+    tabListingsBtn.addEventListener("click", () => {
+        tabListingsBtn.style.background = "var(--primary-orange)";
+        tabListingsBtn.style.color = "#000";
+        tabOrdersBtn.style.background = "var(--card-dark)";
+        tabOrdersBtn.style.color = "var(--text-white)";
+        adminListingsContent.style.display = "block";
+        adminOrdersContent.style.display = "none";
+    });
+}
+
 // Handle Image File Upload & High Quality Processing
 if (postImageFile) {
     postImageFile.addEventListener("change", (e) => {
@@ -105,7 +271,6 @@ if (postImageFile) {
         reader.onload = function (evt) {
             const img = new Image();
             img.onload = function () {
-                // Resize for high crispness (max 1200px width/height)
                 const canvas = document.createElement("canvas");
                 const MAX_WIDTH = 1200;
                 const MAX_HEIGHT = 1200;
@@ -131,7 +296,6 @@ if (postImageFile) {
                 ctx.imageSmoothingQuality = "high";
                 ctx.drawImage(img, 0, 0, width, height);
 
-                // High quality JPEG (0.85)
                 uploadedImageBase64 = canvas.toDataURL("image/jpeg", 0.85);
                 imagePreviewImg.src = uploadedImageBase64;
                 imagePreviewBox.style.display = "block";
@@ -207,7 +371,6 @@ function renderListings() {
         const priceNum = Number(item.price || 0);
         const priceFormatted = priceNum.toLocaleString() + " TZS";
 
-        // Show ONLY the user-uploaded image in crisp quality
         const hasUserImage = item.imageUrl && (item.imageUrl.trim().startsWith("http") || item.imageUrl.trim().startsWith("data:image"));
         const cleanImgUrl = hasUserImage ? item.imageUrl.replace(/'/g, "\\'") : "";
 
@@ -215,7 +378,6 @@ function renderListings() {
             ? `<img src="${item.imageUrl}" alt="${item.title}" onclick="openImageViewerModal('${cleanImgUrl}')">`
             : `<div class="placeholder-no-img"><i class="fas fa-drumstick-bite"></i><span>Picha haijatumiwa</span></div>`;
 
-        // Always default to 0680234423 if none provided
         const phone = item.farmerPhone || "0680234423";
         const safeTitle = escapeHtml(item.title || '');
         const safeFarmer = escapeHtml(item.farmerName || 'Mfugaji');
@@ -281,13 +443,11 @@ window.openContactModal = function(phone, title, farmerName) {
         contactChoiceSub.innerText = `Kuwasiliana na Winga Machachali Support (${mainPhone}):`;
     }
 
-    // Direct phone call button (0680234423)
     btnCallPhone.innerHTML = `<i class="fas fa-phone-alt"></i> Piga Simu (0680234423)`;
     btnCallPhone.onclick = function() {
         window.location.href = 'tel:' + mainPhone;
     };
 
-    // WhatsApp button (0680234423)
     const msg = encodeURIComponent(`Habari, ninaulizia kuhusu tangazo la "${title || 'Kuku'}" kwenye Winga Machachali.`);
     btnOpenWhatsapp.innerHTML = `<i class="fab fa-whatsapp"></i> WhatsApp (0680234423)`;
     btnOpenWhatsapp.href = `https://wa.me/${intPhone}?text=${msg}`;
@@ -336,6 +496,12 @@ window.addEventListener("click", (e) => {
     }
     if (e.target === imageViewerModal) {
         imageViewerModal.style.display = "none";
+    }
+    if (e.target === adminLoginModal) {
+        adminLoginModal.style.display = "none";
+    }
+    if (e.target === adminDashboardModal) {
+        adminDashboardModal.style.display = "none";
     }
 });
 
@@ -415,9 +581,8 @@ if (postChickenForm) {
         const location = document.getElementById("postLocation").value;
         const farmerName = document.getElementById("postFarmerName").value;
         const farmerPhone = document.getElementById("postFarmerPhone").value || "0680234423";
-        const description = document.getElementById("postDescription").value;
+        const description = document.getElementById("postDescription.value");
 
-        // Use uploaded image base64
         const finalImageUrl = uploadedImageBase64 || "";
 
         const newListing = {
@@ -429,7 +594,7 @@ if (postChickenForm) {
             imageUrl: finalImageUrl,
             farmerName,
             farmerPhone,
-            description,
+            description: document.getElementById("postDescription").value,
             datePosted: Date.now(),
             hiddenForUser: false
         };

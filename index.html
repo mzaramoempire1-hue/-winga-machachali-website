@@ -39,6 +39,7 @@
                 <li><a href="#download"><i class="fas fa-download"></i> Pakua APK</a></li>
                 <li><a href="#about"><i class="fas fa-info-circle"></i> Kuhusu App</a></li>
                 <li><a href="#contact"><i class="fas fa-phone-alt"></i> Mawasiliano</a></li>
+                <li><a href="javascript:void(0)" id="openAdminLoginLink"><i class="fas fa-user-shield"></i> Admin</a></li>
             </ul>
 
             <div class="nav-right-actions">
@@ -323,6 +324,47 @@
         </div>
     </div>
 
+    <!-- ADMIN LOGIN MODAL -->
+    <div id="adminLoginModal" class="modal-overlay" style="display: none;">
+        <div class="modal-card">
+            <button id="closeAdminLoginModal" class="modal-close-btn"><i class="fas fa-times"></i></button>
+            <div class="modal-header">
+                <h3><i class="fas fa-user-shield" style="color: var(--primary-orange);"></i> Kuingia kwa Admin</h3>
+                <p>Weka PIN ya Admin kufungua dashibodi</p>
+            </div>
+            <form id="adminLoginForm">
+                <div class="form-group">
+                    <label for="adminPinInput">Admin PIN (Jaribu: 2026)</label>
+                    <input type="password" id="adminPinInput" required placeholder="Weka PIN...">
+                </div>
+                <button type="submit" class="btn btn-primary btn-large" style="width: 100%; justify-content: center; margin-top: 15px;">
+                    <i class="fas fa-unlock-alt"></i> Fungua Dashibodi
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- ADMIN DASHBOARD MODAL -->
+    <div id="adminDashboardModal" class="modal-overlay" style="display: none;">
+        <div class="modal-card" style="max-width: 750px; width: 95%;">
+            <button id="closeAdminDashboardModal" class="modal-close-btn"><i class="fas fa-times"></i></button>
+            <div class="modal-header">
+                <h3><i class="fas fa-tachometer-alt" style="color: var(--primary-orange);"></i> Dashibodi ya Admin</h3>
+                <p>Simamia Oda za Wateja na Matangazo ya Sokoni</p>
+            </div>
+            <div class="admin-tabs" style="display: flex; gap: 10px; margin-bottom: 15px;">
+                <button class="admin-tab-btn active" id="tabOrdersBtn" style="flex: 1; padding: 10px; background: var(--primary-orange); color: #000; border: none; border-radius: 8px; font-weight: 600; cursor: pointer;">📦 Oda Zote (<span id="adminOrdersCount">0</span>)</button>
+                <button class="admin-tab-btn" id="tabListingsBtn" style="flex: 1; padding: 10px; background: var(--card-dark); color: var(--text-white); border: 1px solid var(--card-border); border-radius: 8px; font-weight: 600; cursor: pointer;">🐓 Matangazo Sokoni (<span id="adminListingsCount">0</span>)</button>
+            </div>
+            <div class="admin-tab-content" id="adminOrdersContent" style="max-height: 420px; overflow-y: auto;">
+                <!-- Orders loaded here -->
+            </div>
+            <div class="admin-tab-content" id="adminListingsContent" style="max-height: 420px; overflow-y: auto; display: none;">
+                <!-- Listings loaded here -->
+            </div>
+        </div>
+    </div>
+
     <!-- Footer & Contact -->
     <footer id="contact" class="footer">
         <div class="container footer-container">
@@ -334,6 +376,7 @@
                 <h4>Mawasiliano na Msaada</h4>
                 <p><i class="fab fa-whatsapp" style="color: #25D366;"></i> WhatsApp / Simu: <a href="javascript:void(0)" onclick="openContactModal('0680234423', 'Winga Machachali Support', 'Admin')" style="color: var(--primary-orange); text-decoration: none;"><strong>0680234423</strong></a></p>
                 <p><i class="fas fa-envelope"></i> Barua pepe: <strong>support@wingamachachali.co.tz</strong></p>
+                <p><i class="fas fa-user-shield"></i> <a href="javascript:void(0)" id="openAdminLoginFooter" style="color: var(--primary-orange); text-decoration: none;"><strong>Dashibodi ya Admin</strong></a></p>
             </div>
         </div>
         <div class="footer-bottom">
