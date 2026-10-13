@@ -57,6 +57,11 @@ const contactPhoneDisplay = document.getElementById("contactPhoneDisplay");
 const btnCallPhone = document.getElementById("btnCallPhone");
 const btnOpenWhatsapp = document.getElementById("btnOpenWhatsapp");
 
+// Image Viewer Modal Elements
+const imageViewerModal = document.getElementById("imageViewerModal");
+const fullImageViewerImg = document.getElementById("fullImageViewerImg");
+const closeImageViewerModal = document.getElementById("closeImageViewerModal");
+
 // Toggle Nav Menu on Mobile
 if (menuToggleBtn && navLinks) {
     menuToggleBtn.addEventListener("click", () => {
@@ -90,7 +95,7 @@ document.querySelectorAll('a[href^="#"]').forEach(anchor => {
     });
 });
 
-// Handle Image File Upload & Compression
+// Handle Image File Upload & High Quality Processing
 if (postImageFile) {
     postImageFile.addEventListener("change", (e) => {
         const file = e.target.files[0];
@@ -100,10 +105,10 @@ if (postImageFile) {
         reader.onload = function (evt) {
             const img = new Image();
             img.onload = function () {
-                // Compress & resize image before saving Base64
+                // Resize for high crispness (max 1200px width/height)
                 const canvas = document.createElement("canvas");
-                const MAX_WIDTH = 800;
-                const MAX_HEIGHT = 800;
+                const MAX_WIDTH = 1200;
+                const MAX_HEIGHT = 1200;
                 let width = img.width;
                 let height = img.height;
 
@@ -122,9 +127,12 @@ if (postImageFile) {
                 canvas.width = width;
                 canvas.height = height;
                 const ctx = canvas.getContext("2d");
+                ctx.imageSmoothingEnabled = true;
+                ctx.imageSmoothingQuality = "high";
                 ctx.drawImage(img, 0, 0, width, height);
 
-                uploadedImageBase64 = canvas.toDataURL("image/jpeg", 0.7);
+                // High quality JPEG (0.85)
+                uploadedImageBase64 = canvas.toDataURL("image/jpeg", 0.85);
                 imagePreviewImg.src = uploadedImageBase64;
                 imagePreviewBox.style.display = "block";
             };
@@ -199,20 +207,22 @@ function renderListings() {
         const priceNum = Number(item.price || 0);
         const priceFormatted = priceNum.toLocaleString() + " TZS";
 
-        // Show ONLY the user-uploaded image (HTTP URL or Data URL Base64).
+        // Show ONLY the user-uploaded image in crisp quality
         const hasUserImage = item.imageUrl && (item.imageUrl.trim().startsWith("http") || item.imageUrl.trim().startsWith("data:image"));
+        const cleanImgUrl = hasUserImage ? item.imageUrl.replace(/'/g, "\\'") : "";
+
         const imageElement = hasUserImage
-            ? `<img src="${item.imageUrl}" alt="${item.title}">`
+            ? `<img src="${item.imageUrl}" alt="${item.title}" onclick="openImageViewerModal('${cleanImgUrl}')">`
             : `<div class="placeholder-no-img"><i class="fas fa-drumstick-bite"></i><span>Picha haijatumiwa</span></div>`;
 
-        // Always prioritize main support number 0680234423 if none specified
+        // Always default to 0680234423 if none provided
         const phone = item.farmerPhone || "0680234423";
         const safeTitle = escapeHtml(item.title || '');
         const safeFarmer = escapeHtml(item.farmerName || 'Mfugaji');
 
         return `
             <div class="listing-card">
-                <div class="listing-img">
+                <div class="listing-img" title="Bonyeza kuangalia picha kamili">
                     ${imageElement}
                 </div>
                 <div class="listing-body">
@@ -241,6 +251,19 @@ function renderListings() {
     }).join("");
 }
 
+// Open Full Image Viewer Modal
+window.openImageViewerModal = function(imageUrl) {
+    if (!imageUrl) return;
+    fullImageViewerImg.src = imageUrl;
+    imageViewerModal.style.display = "flex";
+};
+
+if (closeImageViewerModal) {
+    closeImageViewerModal.addEventListener("click", () => {
+        imageViewerModal.style.display = "none";
+    });
+}
+
 // Utility to escape HTML strings
 function escapeHtml(text) {
     return text.replace(/'/g, "\\'").replace(/"/g, '&quot;');
@@ -248,7 +271,6 @@ function escapeHtml(text) {
 
 // Open Contact Choice Modal (Piga Simu / WhatsApp)
 window.openContactModal = function(phone, title, farmerName) {
-    // Both Piga Simu & WhatsApp default to 0680234423
     const mainPhone = "0680234423";
     const intPhone = "255680234423";
 
@@ -311,6 +333,9 @@ window.addEventListener("click", (e) => {
     }
     if (e.target === contactChoiceModal) {
         contactChoiceModal.style.display = "none";
+    }
+    if (e.target === imageViewerModal) {
+        imageViewerModal.style.display = "none";
     }
 });
 
