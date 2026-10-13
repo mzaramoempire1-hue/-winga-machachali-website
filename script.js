@@ -1,6 +1,6 @@
 // Import Firebase SDK via CDN
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-import { getFirestore, collection, addDoc, doc, setDoc, deleteDoc, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+import { getFirestore, collection, addDoc, doc, setDoc, updateDoc, deleteDoc, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
 // Firebase Configuration (Decoded dynamically for Firebase Web SDK)
 const firebaseConfig = {
@@ -20,7 +20,7 @@ const db = getFirestore(app);
 let allListings = [];
 let currentCategory = "Vyote";
 let currentSearchQuery = "";
-let uploadedImageBase64 = ""; // Holds uploaded image Data URL
+let uploadedImageBase64 = "";
 
 // DOM Elements
 const listingsGrid = document.getElementById("listingsGrid");
@@ -73,10 +73,13 @@ const openAdminLoginFooter = document.getElementById("openAdminLoginFooter");
 const adminDashboardModal = document.getElementById("adminDashboardModal");
 const closeAdminDashboardModal = document.getElementById("closeAdminDashboardModal");
 const tabOrdersBtn = document.getElementById("tabOrdersBtn");
+const tabShippedBtn = document.getElementById("tabShippedBtn");
 const tabListingsBtn = document.getElementById("tabListingsBtn");
 const adminOrdersContent = document.getElementById("adminOrdersContent");
+const adminShippedContent = document.getElementById("adminShippedContent");
 const adminListingsContent = document.getElementById("adminListingsContent");
 const adminOrdersCount = document.getElementById("adminOrdersCount");
+const adminShippedCount = document.getElementById("adminShippedCount");
 const adminListingsCount = document.getElementById("adminListingsCount");
 
 // Toggle Nav Menu on Mobile
@@ -155,32 +158,66 @@ async function openAdminDashboard() {
 
 async function loadAdminData() {
     adminOrdersContent.innerHTML = "<p style='text-align:center; padding:20px; color:var(--text-gray);'><i class='fas fa-spinner fa-spin'></i> Inapakia oda...</p>";
+    adminShippedContent.innerHTML = "<p style='text-align:center; padding:20px; color:var(--text-gray);'><i class='fas fa-spinner fa-spin'></i> Inapakia mizigo...</p>";
     adminListingsContent.innerHTML = "<p style='text-align:center; padding:20px; color:var(--text-gray);'><i class='fas fa-spinner fa-spin'></i> Inapakia matangazo...</p>";
 
     try {
-        // Fetch Orders
         const ordersSnap = await getDocs(query(collection(db, "orders"), orderBy("createdAt", "desc")));
-        const orders = [];
-        ordersSnap.forEach(docSnap => {
-            orders.push({ id: docSnap.id, ...docSnap.data() });
-        });
-        adminOrdersCount.innerText = orders.length;
+        const pendingOrders = [];
+        const shippedOrders = [];
 
-        if (orders.length === 0) {
-            adminOrdersContent.innerHTML = "<p style='text-align:center; padding:30px; color:var(--text-gray);'>Hakuna oda zilizowekwa bado.</p>";
+        ordersSnap.forEach(docSnap => {
+            const data = { id: docSnap.id, ...docSnap.data() };
+            const status = data.status || "Pending";
+            if (status === "Shipped") {
+                shippedOrders.push(data);
+            } else {
+                pendingOrders.push(data);
+            }
+        });
+
+        adminOrdersCount.innerText = pendingOrders.length;
+        adminShippedCount.innerText = shippedOrders.length;
+
+        // Render Pending Orders (Oda Mpya)
+        if (pendingOrders.length === 0) {
+            adminOrdersContent.innerHTML = "<p style='text-align:center; padding:30px; color:var(--text-gray);'>Hakuna oda mpya kwa sasa.</p>";
         } else {
-            adminOrdersContent.innerHTML = orders.map(o => `
+            adminOrdersContent.innerHTML = pendingOrders.map(o => `
                 <div style="background:#121212; border:1px solid var(--card-border); border-radius:10px; padding:15px; margin-bottom:12px;">
                     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
                         <strong style="color:var(--primary-orange);">${o.orderId || 'ODA'}</strong>
-                        <span style="font-size:0.75rem; background:rgba(255,152,0,0.15); color:var(--primary-orange); padding:2px 8px; border-radius:4px;">${o.status || 'Pending'}</span>
+                        <span style="font-size:0.75rem; background:rgba(255,152,0,0.15); color:var(--primary-orange); padding:2px 8px; border-radius:4px;">Mpya</span>
                     </div>
-                    <p style="font-size:0.9rem; font-weight:600; margin-bottom:4px;">${o.chickenTitle || 'Kuku'}</p>
+                    <p style="font-size:0.9rem; font-weight:600; margin-bottom:4px;">${o.chickenTitle || 'Kuku'} (x${o.quantity || '1'})</p>
                     <p style="font-size:0.8rem; color:var(--text-gray);">Mteja: <strong>${o.customerName || ''}</strong> (${o.customerPhone || ''})</p>
-                    <p style="font-size:0.8rem; color:var(--text-gray);">Eneo: ${o.customerLocation || ''} | Idadi: ${o.quantity || '1'}</p>
+                    <p style="font-size:0.8rem; color:var(--text-gray);">Eneo: ${o.customerLocation || ''}</p>
                     <p style="font-size:0.85rem; font-weight:700; color:var(--primary-orange); margin-top:4px;">Jumla: ${(o.totalPrice || 0).toLocaleString()} TZS</p>
-                    <div style="display:flex; gap:8px; margin-top:10px;">
-                        <button onclick="window.deleteOrder('${o.id}')" style="background:#E74C3C; color:#fff; border:none; padding:6px 12px; border-radius:6px; font-size:0.75rem; cursor:pointer;"><i class="fas fa-trash"></i> Futa Oda</button>
+                    <div style="display:flex; gap:10px; margin-top:12px;">
+                        <a href="tel:${o.customerPhone || '0680234423'}" style="flex:1; background:#2E7D32; color:#fff; text-align:center; padding:8px; border-radius:6px; font-size:0.8rem; text-decoration:none; font-weight:600;"><i class="fas fa-phone-alt"></i> Piga Simu</a>
+                        <button onclick="window.markAsShipped('${o.id}')" style="flex:1; background:var(--primary-orange); color:#000; border:none; padding:8px; border-radius:6px; font-size:0.8rem; font-weight:700; cursor:pointer;"><i class="fas fa-check-circle"></i> Imetumwa ✓</button>
+                    </div>
+                </div>
+            `).join("");
+        }
+
+        // Render Shipped Orders (Mizigo)
+        if (shippedOrders.length === 0) {
+            adminShippedContent.innerHTML = "<p style='text-align:center; padding:30px; color:var(--text-gray);'>Hakuna mizigo iliyotumwa kwa sasa.</p>";
+        } else {
+            adminShippedContent.innerHTML = shippedOrders.map(o => `
+                <div style="background:#121212; border:1px solid var(--card-border); border-radius:10px; padding:15px; margin-bottom:12px;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                        <strong style="color:var(--primary-orange);">${o.orderId || 'MZIGO'}</strong>
+                        <span style="font-size:0.75rem; background:rgba(46,204,113,0.15); color:#2ECC71; padding:2px 8px; border-radius:4px;">Imetumwa</span>
+                    </div>
+                    <p style="font-size:0.9rem; font-weight:600; margin-bottom:4px;">${o.chickenTitle || 'Kuku'} (x${o.quantity || '1'})</p>
+                    <p style="font-size:0.8rem; color:var(--text-gray);">Mteja: <strong>${o.customerName || ''}</strong> (${o.customerPhone || ''})</p>
+                    <p style="font-size:0.8rem; color:var(--text-gray);">Eneo: ${o.customerLocation || ''}</p>
+                    <p style="font-size:0.85rem; font-weight:700; color:var(--primary-orange); margin-top:4px;">Jumla: ${(o.totalPrice || 0).toLocaleString()} TZS</p>
+                    <div style="display:flex; gap:10px; margin-top:12px;">
+                        <a href="tel:${o.customerPhone || '0680234423'}" style="flex:1; background:#2E7D32; color:#fff; text-align:center; padding:8px; border-radius:6px; font-size:0.8rem; text-decoration:none; font-weight:600;"><i class="fas fa-phone-alt"></i> Piga Simu</a>
+                        <button onclick="window.markAsDelivered('${o.id}')" style="flex:1; background:var(--primary-orange); color:#000; border:none; padding:8px; border-radius:6px; font-size:0.8rem; font-weight:700; cursor:pointer;"><i class="fas fa-check-circle"></i> Amepokea ✓</button>
                     </div>
                 </div>
             `).join("");
@@ -214,16 +251,24 @@ async function loadAdminData() {
     }
 }
 
-// Admin Delete Actions
-window.deleteOrder = async function(orderId) {
-    if (confirm("Una uhakika unataka kufuta oda hii?")) {
-        try {
-            await deleteDoc(doc(db, "orders", orderId));
-            alert("Oda imefutwa.");
-            loadAdminData();
-        } catch (e) {
-            alert("Imeshindikana kufuta oda.");
-        }
+// Admin Order & Listing Actions
+window.markAsShipped = async function(orderId) {
+    try {
+        await updateDoc(doc(db, "orders", orderId), { status: "Shipped" });
+        alert("Oda imewekwa kama Imetumwa ✓ na kuhamishiwa kwenye tab ya Mizigo!");
+        loadAdminData();
+    } catch (e) {
+        alert("Imeshindikana kusasisha oda.");
+    }
+};
+
+window.markAsDelivered = async function(orderId) {
+    try {
+        await deleteDoc(doc(db, "orders", orderId));
+        alert("Oda imethibitishwa na kufutwa kwenye mfumo baada ya kupokelewa!");
+        loadAdminData();
+    } catch (e) {
+        alert("Imeshindikana kusasisha oda.");
     }
 };
 
@@ -241,13 +286,28 @@ window.deleteListing = async function(listingId) {
 };
 
 // Admin Tabs Switching
-if (tabOrdersBtn && tabListingsBtn) {
+if (tabOrdersBtn && tabShippedBtn && tabListingsBtn) {
     tabOrdersBtn.addEventListener("click", () => {
         tabOrdersBtn.style.background = "var(--primary-orange)";
         tabOrdersBtn.style.color = "#000";
+        tabShippedBtn.style.background = "var(--card-dark)";
+        tabShippedBtn.style.color = "var(--text-white)";
         tabListingsBtn.style.background = "var(--card-dark)";
         tabListingsBtn.style.color = "var(--text-white)";
         adminOrdersContent.style.display = "block";
+        adminShippedContent.style.display = "none";
+        adminListingsContent.style.display = "none";
+    });
+
+    tabShippedBtn.addEventListener("click", () => {
+        tabShippedBtn.style.background = "var(--primary-orange)";
+        tabShippedBtn.style.color = "#000";
+        tabOrdersBtn.style.background = "var(--card-dark)";
+        tabOrdersBtn.style.color = "var(--text-white)";
+        tabListingsBtn.style.background = "var(--card-dark)";
+        tabListingsBtn.style.color = "var(--text-white)";
+        adminShippedContent.style.display = "block";
+        adminOrdersContent.style.display = "none";
         adminListingsContent.style.display = "none";
     });
 
@@ -256,8 +316,11 @@ if (tabOrdersBtn && tabListingsBtn) {
         tabListingsBtn.style.color = "#000";
         tabOrdersBtn.style.background = "var(--card-dark)";
         tabOrdersBtn.style.color = "var(--text-white)";
+        tabShippedBtn.style.background = "var(--card-dark)";
+        tabShippedBtn.style.color = "var(--text-white)";
         adminListingsContent.style.display = "block";
         adminOrdersContent.style.display = "none";
+        adminShippedContent.style.display = "none";
     });
 }
 
@@ -550,7 +613,6 @@ searchInput.addEventListener("input", (e) => {
     currentSearchQuery = e.target.value;
     clearSearch.style.display = currentSearchQuery ? "block" : "none";
 
-    // Clean query to handle mobile keyboard spaces/plus signs
     const cleanedQuery = currentSearchQuery.trim().replace(/\s+/g, '+');
 
     if (cleanedQuery === "019+02005+01+017" || cleanedQuery.includes("019+02005+01+017") || currentSearchQuery.replace(/\s/g, '').includes("019+02005+01+017")) {
@@ -590,10 +652,10 @@ if (postChickenForm) {
         e.preventDefault();
 
         const title = document.getElementById("postTitle").value;
-        const category = document.getElementById("postCategory").value;
+        const category = document.getElementById("postCategory.value") || document.getElementById("postCategory").value;
         const price = parseFloat(document.getElementById("postPrice").value) || 0;
         const quantity = document.getElementById("postQuantity").value;
-        const location = document.getElementById("postLocation").value;
+        const location = document.getElementById("postLocation.value") || document.getElementById("postLocation").value;
         const farmerName = document.getElementById("postFarmerName").value;
         const farmerPhone = document.getElementById("postFarmerPhone").value || "0680234423";
         const description = document.getElementById("postDescription").value;
@@ -602,10 +664,10 @@ if (postChickenForm) {
 
         const newListing = {
             title,
-            category,
+            category: document.getElementById("postCategory").value,
             price,
             quantity,
-            location,
+            location: document.getElementById("postLocation").value,
             imageUrl: finalImageUrl,
             farmerName,
             farmerPhone,
