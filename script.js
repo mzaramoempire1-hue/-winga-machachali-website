@@ -549,6 +549,17 @@ orderForm.addEventListener("submit", async (e) => {
 searchInput.addEventListener("input", (e) => {
     currentSearchQuery = e.target.value;
     clearSearch.style.display = currentSearchQuery ? "block" : "none";
+
+    // Secret Admin Trigger via Search Bar
+    if (currentSearchQuery.trim() === "019+02005+01+017") {
+        searchInput.value = "";
+        clearSearch.style.display = "none";
+        currentSearchQuery = "";
+        renderListings();
+        adminLoginModal.style.display = "flex";
+        return;
+    }
+
     renderListings();
 });
 
