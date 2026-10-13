@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Winga Machachali - Soko Kuu la Kuku Tanzania</title>
-    <meta name="description" content="Winga Machachali ni soko kuu la kidijitali la kuku, vifaranga, na mayai Tanzania. Uza kwa uhakika na nunua kwa uaminifu. Pakua App sasa!">
+    <meta name="description" content="Winga Machachali ni soko kuu la kidijitali la kuku, vifaranga, na mayai Tanzania. Uza kwa uhakika na nunua kwa uaminifu. Pakua App aufanya biashara mtandaoni!">
     <meta name="keywords" content="Winga Machachali, soko la kuku, kuku wa kienyeji, kuku wa broiler, vifaranga, mayai tanzania, uza kuku online">
     <meta name="author" content="Winga Machachali">
     <meta name="google-site-verification" content="KCtS-0coJdyEllXh9f63KTLgr-VED_ZhhuhI86AqiiA" />
@@ -29,7 +29,8 @@
             </div>
             <ul class="nav-links">
                 <li><a href="#about">Kuhusu App</a></li>
-                <li><a href="#features">Sifa Kuu</a></li>
+                <li><a href="#marketplace">Soko & Matangazo</a></li>
+                <li><a href="#post-listing">Weka Tangazo</a></li>
                 <li><a href="#download">Pakua APK</a></li>
                 <li><a href="#contact">Mawasiliano</a></li>
             </ul>
@@ -43,20 +44,20 @@
             <div class="hero-content">
                 <div class="badge"><i class="fas fa-check-circle"></i> Soko Namba 1 la Kuku Tanzania</div>
                 <h1>Uza kwa Uhakika, Nunua kwa Uaminifu</h1>
-                <p>Winga Machachali ni jukwaa la kidijitali linalounganisha wafugaji, wauzaji, na wanunuzi wa kuku, vifaranga, na mayai kote nchini Tanzania.</p>
+                <p>Winga Machachali ni soko kuu la kidijitali linalounganisha wafugaji, wauzaji, na wanunuzi wa kuku, vifaranga, na mayai kote nchini Tanzania. Fanya biashara hapa hapa kwenye tovuti au pakua App yetu!</p>
                 <div class="hero-btns">
-                    <a href="winga-machachali.apk" download class="btn btn-primary btn-large">
+                    <a href="#marketplace" class="btn btn-primary btn-large">
+                        <i class="fas fa-store"></i>
+                        <div>
+                            <span class="btn-sub">Angalia Soko</span>
+                            <span class="btn-title">Tazama Matangazo</span>
+                        </div>
+                    </a>
+                    <a href="winga-machachali.apk" download class="btn btn-secondary btn-large">
                         <i class="fab fa-android"></i>
                         <div>
                             <span class="btn-sub">Pakua Moja kwa Moja</span>
                             <span class="btn-title">Winga Machachali APK</span>
-                        </div>
-                    </a>
-                    <a href="#install-guide" class="btn btn-secondary btn-large">
-                        <i class="fas fa-info-circle"></i>
-                        <div>
-                            <span class="btn-sub">Mwongozo</span>
-                            <span class="btn-title">Jinsi ya Kusakinisha</span>
                         </div>
                     </a>
                 </div>
@@ -85,47 +86,111 @@
         </div>
     </header>
 
-    <!-- App Categories -->
-    <section class="categories">
+    <!-- LIVE MARKETPLACE SECTION -->
+    <section id="marketplace" class="marketplace-section">
         <div class="container">
-            <div class="category-grid">
-                <div class="cat-card"><i class="fas fa-drumstick-bite"></i> Kienyeji</div>
-                <div class="cat-card"><i class="fas fa-feather-alt"></i> Broiler</div>
-                <div class="cat-card"><i class="fas fa-egg"></i> Layer</div>
-                <div class="cat-card"><i class="fas fa-kiwi-bird"></i> Vifaranga</div>
-                <div class="cat-card"><i class="fas fa-layer-group"></i> Mayai</div>
+            <div class="section-title">
+                <h2>Soko la <span>Winga Machachali</span> (Live)</h2>
+                <p>Tazama na utafute kuku, vifaranga, na mayai kutoka kwa wafugaji mbalimbali nchini.</p>
+            </div>
+
+            <!-- Search Bar -->
+            <div class="search-bar-container">
+                <div class="search-input-wrapper">
+                    <i class="fas fa-search search-icon"></i>
+                    <input type="text" id="searchInput" placeholder="Tafuta kuku, aina, au mkoa...">
+                    <button id="clearSearch" style="display: none;"><i class="fas fa-times"></i></button>
+                </div>
+            </div>
+
+            <!-- Category Filter Chips -->
+            <div class="categories-filter" id="categoriesFilter">
+                <button class="chip active" data-category="Vyote">Vyote</button>
+                <button class="chip" data-category="Kienyeji">Kienyeji</button>
+                <button class="chip" data-category="Broiler">Broiler</button>
+                <button class="chip" data-category="Layer">Layer</button>
+                <button class="chip" data-category="Vifaranga">Vifaranga</button>
+                <button class="chip" data-category="Chotara">Chotara</button>
+                <button class="chip" data-category="Mayai">Mayai</button>
+            </div>
+
+            <!-- Listings Grid -->
+            <div id="listingsLoading" class="loading-state">
+                <i class="fas fa-spinner fa-spin"></i> Inapakia matangazo kutoka sokoni...
+            </div>
+            <div id="listingsGrid" class="listings-grid">
+                <!-- Dynamically loaded listings go here -->
+            </div>
+            <div id="noListings" class="no-listings" style="display: none;">
+                <p>Hakuna matangazo yaliyopatikana kwa sasa.</p>
             </div>
         </div>
     </section>
 
-    <!-- Features Section -->
-    <section id="features" class="features">
+    <!-- POST LISTING SECTION -->
+    <section id="post-listing" class="post-listing-section">
         <div class="container">
             <div class="section-title">
-                <h2>Kwanini Utumie <span>Winga Machachali</span>?</h2>
-                <p>Kazi yetu ni kurahisisha biashara ya ufugaji na kuongeza kipato chako.</p>
+                <h2>Weka Tangazo Lako <span>Sokoni</span></h2>
+                <p>Uza kuku, vifaranga, au mayai yako kwa urahisi kabisa hapa.</p>
             </div>
-            <div class="features-grid">
-                <div class="feature-card">
-                    <div class="feature-icon"><i class="fas fa-bullhorn"></i></div>
-                    <h3>Post Tangazo Lako</h3>
-                    <p>Weka picha ya kuku wako, bei, idadi, na eneo lako ili wanunuzi wakupate kwa haraka.</p>
-                </div>
-                <div class="feature-card">
-                    <div class="feature-icon"><i class="fas fa-search-dollar"></i></div>
-                    <h3>Tafuta Kuku kwa Urahisi</h3>
-                    <p>Tafuta kuku kulingana na aina, mkoa, au wilaya. Pata bei bora sokoni.</p>
-                </div>
-                <div class="feature-card">
-                    <div class="feature-icon"><i class="fab fa-whatsapp"></i></div>
-                    <h3>Mawasiliano ya Moja kwa Moja</h3>
-                    <p>Wasiliana na muuzaji moja kwa moja kwa simu au WhatsApp bila dalali au middlemen.</p>
-                </div>
-                <div class="feature-card">
-                    <div class="feature-icon"><i class="fas fa-shield-alt"></i></div>
-                    <h3>Usalama na Uaminifu</h3>
-                    <p>Mfumo salama unaowapa wanunuzi na wauzaji uhakika wa biashara iliyotukuka.</p>
-                </div>
+            <div class="form-card">
+                <form id="postChickenForm">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="postTitle">Kichwa cha Habari (Mf: Kuku wa Kienyeji Milisho ya Asili)</label>
+                            <input type="text" id="postTitle" required placeholder="Weka kichwa cha tangazo...">
+                        </div>
+                        <div class="form-group">
+                            <label for="postCategory">Aina ya Bidhaa</label>
+                            <select id="postCategory">
+                                <option value="Kienyeji">Kienyeji</option>
+                                <option value="Broiler">Broiler</option>
+                                <option value="Layer">Layer</option>
+                                <option value="Vifaranga">Vifaranga</option>
+                                <option value="Chotara">Chotara</option>
+                                <option value="Mayai">Mayai</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="postPrice">Bei kwa TZS (Mf: 15000)</label>
+                            <input type="number" id="postPrice" required placeholder="Bei ya kuku mmoja...">
+                        </div>
+                        <div class="form-group">
+                            <label for="postQuantity">Idadi (Mf: 20)</label>
+                            <input type="text" id="postQuantity" required placeholder="Idadi iliyopo...">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="postLocation">Mkoa / Wilaya (Mf: Dar es Salaam, Kinondoni)</label>
+                            <input type="text" id="postLocation" required placeholder="Eneo ulipo...">
+                        </div>
+                        <div class="form-group">
+                            <label for="postImageUrl">Picha (URL ya Picha au Link)</label>
+                            <input type="text" id="postImageUrl" placeholder="https://... auacha wazi iwe na picha chaguo-msingi">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="postFarmerName">Jina la Muuzaji / Mfugaji</label>
+                            <input type="text" id="postFarmerName" required placeholder="Jina lako...">
+                        </div>
+                        <div class="form-group">
+                            <label for="postFarmerPhone">Namba ya Simu (WhatsApp)</label>
+                            <input type="text" id="postFarmerPhone" required placeholder="07XXXXXXXX...">
+                        </div>
+                    </div>
+                    <div class="form-group full-width">
+                        <label for="postDescription">Maelezo ya Ziada</label>
+                        <textarea id="postDescription" rows="3" placeholder="Eleza kwa ufasaha ubora wa kuku wako..."></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-large" style="width: 100%; justify-content: center;">
+                        <i class="fas fa-paper-plane"></i> Chapisha Tangazo Sokoni
+                    </button>
+                </form>
             </div>
         </div>
     </section>
@@ -188,6 +253,7 @@
         </div>
     </footer>
 
-    <script src="script.js"></script>
+    <!-- Firebase SDK & Script -->
+    <script type="module" src="script.js"></script>
 </body>
 </html>
