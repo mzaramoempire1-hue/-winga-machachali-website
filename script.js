@@ -195,12 +195,23 @@ async function loadAdminData() {
             `).join("");
         }
 
-        // 3. Fetch Real Listings (Matangazo)
+        // 3. Fetch Real Listings (Matangazo) with 30-Day Expiration Auto-Cleanup
         const listingsSnap = await getDocs(query(collection(db, "chickens"), orderBy("datePosted", "desc")));
         const listings = [];
+        const thirtyDaysMs = 30 * 24 * 60 * 60 * 1000;
+        const now = Date.now();
+
         listingsSnap.forEach(docSnap => {
-            listings.push({ id: docSnap.id, ...docSnap.data() });
+            const data = docSnap.data();
+            const datePosted = data.datePosted || now;
+            if ((now - datePosted) > thirtyDaysMs) {
+                // Auto delete expired listing after 30 days from Firebase
+                deleteDoc(doc(db, "chickens", docSnap.id)).catch(err => console.error("Auto-delete expired listing error:", err));
+            } else {
+                listings.push({ id: docSnap.id, ...data });
+            }
         });
+
         document.getElementById("statListingsCount").innerText = listings.length;
         adminListingsCount.innerText = listings.length;
 
@@ -359,7 +370,7 @@ if (removeImageBtn) {
     });
 }
 
-// Fetch & Listen to Firestore "chickens" collection
+// Fetch & Listen to Firestore "chickens" collection with 30-Day Auto-Cleanup
 function initFirestoreListener() {
     listingsLoading.style.display = "block";
     listingsGrid.innerHTML = "";
@@ -369,8 +380,18 @@ function initFirestoreListener() {
 
     getDocs(q).then((snapshot) => {
         allListings = [];
+        const thirtyDaysMs = 30 * 24 * 60 * 60 * 1000;
+        const now = Date.now();
+
         snapshot.forEach((docSnap) => {
-            allListings.push({ id: docSnap.id, ...docSnap.data() });
+            const data = docSnap.data();
+            const datePosted = data.datePosted || now;
+            if ((now - datePosted) > thirtyDaysMs) {
+                // Auto delete expired listing after 30 days from Firebase
+                deleteDoc(doc(db, "chickens", docSnap.id)).catch(err => console.error("Auto-delete expired listing error:", err));
+            } else {
+                allListings.push({ id: docSnap.id, ...data });
+            }
         });
         renderListings();
     }).catch((error) => {
@@ -593,7 +614,7 @@ searchInput.addEventListener("input", (e) => {
 
     const cleanedQuery = currentSearchQuery.trim().replace(/\s+/g, '+');
 
-    if (cleanedQuery === "019+02005+01+017" || cleanedQuery.includes("019+02005+01+017") || currentSearchQuery.replace(/\s/g, '').includes("019+02005+01+017")) {
+    if (cleanedQuery === "019+02005+01+017" || cleanedQuery.includes("019+02005+01+017" ) || currentSearchQuery.replace(/\s/g, '').includes("019+02005+01+017")) {
         searchInput.value = "";
         clearSearch.style.display = "none";
         currentSearchQuery = "";
@@ -630,7 +651,7 @@ if (postChickenForm) {
         const title = document.getElementById("postTitle").value;
         const category = document.getElementById("postCategory").value;
         const price = parseFloat(document.getElementById("postPrice").value) || 0;
-        const quantity = document.getElementById("postQuantity").value;
+        const quantity = document.getElementById("postQuantity.value") || document.getElementById("postQuantity").value;
         const location = document.getElementById("postLocation").value;
         const farmerName = document.getElementById("postFarmerName").value;
         const farmerPhone = document.getElementById("postFarmerPhone").value || "0680234423";
@@ -642,7 +663,7 @@ if (postChickenForm) {
             title,
             category,
             price,
-            quantity,
+            quantity: document.getElementById("postQuantity").value,
             location,
             imageUrl: finalImageUrl,
             farmerName,
