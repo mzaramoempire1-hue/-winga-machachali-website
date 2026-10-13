@@ -62,14 +62,7 @@ const imageViewerModal = document.getElementById("imageViewerModal");
 const fullImageViewerImg = document.getElementById("fullImageViewerImg");
 const closeImageViewerModal = document.getElementById("closeImageViewerModal");
 
-// Admin Modal Elements
-const adminLoginModal = document.getElementById("adminLoginModal");
-const closeAdminLoginModal = document.getElementById("closeAdminLoginModal");
-const adminLoginForm = document.getElementById("adminLoginForm");
-const adminPinInput = document.getElementById("adminPinInput");
-const openAdminLoginLink = document.getElementById("openAdminLoginLink");
-const openAdminLoginFooter = document.getElementById("openAdminLoginFooter");
-
+// Admin Modal Elements (Direct Access with Passcode)
 const adminDashboardModal = document.getElementById("adminDashboardModal");
 const closeAdminDashboardModal = document.getElementById("closeAdminDashboardModal");
 const tabOrdersBtn = document.getElementById("tabOrdersBtn");
@@ -115,42 +108,13 @@ document.querySelectorAll('a[href^="#"]').forEach(anchor => {
     });
 });
 
-// Admin Login Handlers
-if (openAdminLoginLink) {
-    openAdminLoginLink.addEventListener("click", () => {
-        adminLoginModal.style.display = "flex";
-        if (navLinks && window.innerWidth <= 768) navLinks.style.display = "none";
-    });
-}
-if (openAdminLoginFooter) {
-    openAdminLoginFooter.addEventListener("click", () => {
-        adminLoginModal.style.display = "flex";
-    });
-}
-if (closeAdminLoginModal) {
-    closeAdminLoginModal.addEventListener("click", () => {
-        adminLoginModal.style.display = "none";
-    });
-}
 if (closeAdminDashboardModal) {
     closeAdminDashboardModal.addEventListener("click", () => {
         adminDashboardModal.style.display = "none";
     });
 }
 
-adminLoginForm.addEventListener("submit", (e) => {
-    e.preventDefault();
-    const pin = adminPinInput.value.trim();
-    if (pin === "2026" || pin === "admin123") {
-        adminLoginModal.style.display = "none";
-        adminPinInput.value = "";
-        openAdminDashboard();
-    } else {
-        alert("PIN si sahihi! Jaribu tena (PIN ya jaribio ni 2026).");
-    }
-});
-
-// Open Admin Dashboard & Fetch Data
+// Open Admin Dashboard directly & Fetch Real Data
 async function openAdminDashboard() {
     adminDashboardModal.style.display = "flex";
     await loadAdminData();
@@ -162,6 +126,12 @@ async function loadAdminData() {
     adminListingsContent.innerHTML = "<p style='text-align:center; padding:20px; color:var(--text-gray);'><i class='fas fa-spinner fa-spin'></i> Inapakia matangazo...</p>";
 
     try {
+        // 1. Fetch Real Users Count
+        const usersSnap = await getDocs(collection(db, "users"));
+        const usersCount = usersSnap.size;
+        document.getElementById("statUsersCount").innerText = usersCount;
+
+        // 2. Fetch Real Orders (Oda)
         const ordersSnap = await getDocs(query(collection(db, "orders"), orderBy("createdAt", "desc")));
         const pendingOrders = [];
         const shippedOrders = [];
@@ -176,6 +146,8 @@ async function loadAdminData() {
             }
         });
 
+        const totalOrdersCount = pendingOrders.length + shippedOrders.length;
+        document.getElementById("statOrdersCount").innerText = totalOrdersCount;
         adminOrdersCount.innerText = pendingOrders.length;
         adminShippedCount.innerText = shippedOrders.length;
 
@@ -194,7 +166,7 @@ async function loadAdminData() {
                     <p style="font-size:0.8rem; color:var(--text-gray);">Eneo: ${o.customerLocation || ''}</p>
                     <p style="font-size:0.85rem; font-weight:700; color:var(--primary-orange); margin-top:4px;">Jumla: ${(o.totalPrice || 0).toLocaleString()} TZS</p>
                     <div style="display:flex; gap:10px; margin-top:12px;">
-                        <a href="tel:${o.customerPhone || '0680234423'}" style="flex:1; background:#2E7D32; color:#fff; text-align:center; padding:8px; border-radius:6px; font-size:0.8rem; text-decoration:none; font-weight:600;"><i class="fas fa-phone-alt"></i> Piga Simu</a>
+                        <a href="tel:${o.customerPhone || '0680234423'}" style="flex:1; background:#2E7D32; color:#fff; text-align:center; padding:8px; border-radius:6px; font-size:0.8rem; text-decoration:none; font-weight:600;"><i class="fas fa-phone-alt"></i> Piga Simu Mteja</a>
                         <button onclick="window.markAsShipped('${o.id}')" style="flex:1; background:var(--primary-orange); color:#000; border:none; padding:8px; border-radius:6px; font-size:0.8rem; font-weight:700; cursor:pointer;"><i class="fas fa-check-circle"></i> Imetumwa ✓</button>
                     </div>
                 </div>
@@ -216,19 +188,20 @@ async function loadAdminData() {
                     <p style="font-size:0.8rem; color:var(--text-gray);">Eneo: ${o.customerLocation || ''}</p>
                     <p style="font-size:0.85rem; font-weight:700; color:var(--primary-orange); margin-top:4px;">Jumla: ${(o.totalPrice || 0).toLocaleString()} TZS</p>
                     <div style="display:flex; gap:10px; margin-top:12px;">
-                        <a href="tel:${o.customerPhone || '0680234423'}" style="flex:1; background:#2E7D32; color:#fff; text-align:center; padding:8px; border-radius:6px; font-size:0.8rem; text-decoration:none; font-weight:600;"><i class="fas fa-phone-alt"></i> Piga Simu</a>
+                        <a href="tel:${o.customerPhone || '0680234423'}" style="flex:1; background:#2E7D32; color:#fff; text-align:center; padding:8px; border-radius:6px; font-size:0.8rem; text-decoration:none; font-weight:600;"><i class="fas fa-phone-alt"></i> Piga Simu Mteja</a>
                         <button onclick="window.markAsDelivered('${o.id}')" style="flex:1; background:var(--primary-orange); color:#000; border:none; padding:8px; border-radius:6px; font-size:0.8rem; font-weight:700; cursor:pointer;"><i class="fas fa-check-circle"></i> Amepokea ✓</button>
                     </div>
                 </div>
             `).join("");
         }
 
-        // Fetch Listings (Soko) with Direct Call Button to Farmer/Seller
+        // 3. Fetch Real Listings (Matangazo)
         const listingsSnap = await getDocs(query(collection(db, "chickens"), orderBy("datePosted", "desc")));
         const listings = [];
         listingsSnap.forEach(docSnap => {
             listings.push({ id: docSnap.id, ...docSnap.data() });
         });
+        document.getElementById("statListingsCount").innerText = listings.length;
         adminListingsCount.innerText = listings.length;
 
         if (listings.length === 0) {
@@ -568,9 +541,6 @@ window.addEventListener("click", (e) => {
     if (e.target === imageViewerModal) {
         imageViewerModal.style.display = "none";
     }
-    if (e.target === adminLoginModal) {
-        adminLoginModal.style.display = "none";
-    }
     if (e.target === adminDashboardModal) {
         adminDashboardModal.style.display = "none";
     }
@@ -616,7 +586,7 @@ orderForm.addEventListener("submit", async (e) => {
     }
 });
 
-// Search Event Listeners with Secret Passcode Trigger
+// Search Event Listeners with Secret Passcode Trigger -> Opens Admin Dashboard DIRECTLY
 searchInput.addEventListener("input", (e) => {
     currentSearchQuery = e.target.value;
     clearSearch.style.display = currentSearchQuery ? "block" : "none";
@@ -628,9 +598,7 @@ searchInput.addEventListener("input", (e) => {
         clearSearch.style.display = "none";
         currentSearchQuery = "";
         renderListings();
-        if (adminLoginModal) {
-            adminLoginModal.style.display = "flex";
-        }
+        openAdminDashboard(); // Open admin dashboard DIRECTLY with zero secondary PIN prompts!
         return;
     }
 
