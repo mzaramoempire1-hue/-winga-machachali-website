@@ -42,6 +42,14 @@ const orderPricePerUnit = document.getElementById("orderPricePerUnit");
 const orderQuantity = document.getElementById("orderQuantity");
 const orderTotalPricePreview = document.getElementById("orderTotalPricePreview");
 
+// Contact Choice Modal Elements (Piga Simu / WhatsApp)
+const contactChoiceModal = document.getElementById("contactChoiceModal");
+const closeContactChoiceModal = document.getElementById("closeContactChoiceModal");
+const contactChoiceSub = document.getElementById("contactChoiceSub");
+const contactPhoneDisplay = document.getElementById("contactPhoneDisplay");
+const btnCallPhone = document.getElementById("btnCallPhone");
+const btnOpenWhatsapp = document.getElementById("btnOpenWhatsapp");
+
 // Smooth scrolling for navigation links
 document.querySelectorAll('a[href^="#"]').forEach(anchor => {
     anchor.addEventListener('click', function (e) {
@@ -112,7 +120,8 @@ function renderListings() {
             : "https://images.unsplash.com/photo-1548550023-2bdb3c5beed7?auto=format&fit=crop&w=600&q=80";
 
         const phone = item.farmerPhone || "0680234423";
-        const whatsappMsg = encodeURIComponent(`Habari ${item.farmerName || 'Muuzaji'}, nimeona tangazo lako la "${item.title}" (${priceFormatted}) kwenye Winga Machachali. Bado lipo?`);
+        const safeTitle = escapeHtml(item.title || '');
+        const safeFarmer = escapeHtml(item.farmerName || 'Muuzaji');
 
         return `
             <div class="listing-card">
@@ -132,12 +141,12 @@ function renderListings() {
                         Muuzaji: <strong>${item.farmerName || 'Mfugaji'}</strong>
                     </div>
                     <div class="listing-actions">
-                        <button class="order-btn-action" onclick="openOrderModal('${item.id || ''}', '${escapeHtml(item.title || '')}', ${priceNum})">
+                        <button class="order-btn-action" onclick="openOrderModal('${item.id || ''}', '${safeTitle}', ${priceNum})">
                             <i class="fas fa-shopping-cart"></i> Weka Oda
                         </button>
-                        <a href="https://wa.me/255${phone.replace(/^0/, '')}?text=${whatsappMsg}" target="_blank" class="whatsapp-btn-action">
+                        <button class="contact-btn-action" onclick="openContactModal('${phone}', '${safeTitle}', '${safeFarmer}')">
                             <i class="fab fa-whatsapp"></i>
-                        </a>
+                        </button>
                     </div>
                 </div>
             </div>
@@ -148,6 +157,31 @@ function renderListings() {
 // Utility to escape HTML strings
 function escapeHtml(text) {
     return text.replace(/'/g, "\\'").replace(/"/g, '&quot;');
+}
+
+// Open Contact Choice Modal (Piga Simu / WhatsApp)
+window.openContactModal = function(phone, title, farmerName) {
+    const cleanedPhone = phone || "0680234423";
+    const intPhone = "255" + cleanedPhone.replace(/^0/, '');
+
+    contactPhoneDisplay.innerText = cleanedPhone;
+    if (farmerName && farmerName !== 'Admin') {
+        contactChoiceSub.innerText = `Chagua njia ya kuwasiliana na ${farmerName} (${title || 'Kuku'}):`;
+    } else {
+        contactChoiceSub.innerText = `Chagua njia ya kuwasiliana na Huduma kwa Wateja (0680234423):`;
+    }
+
+    btnCallPhone.href = `tel:${cleanedPhone}`;
+    const msg = encodeURIComponent(`Habari ${farmerName || 'Muuzaji'}, nimeona tangazo lako la "${title || 'Kuku'}" kwenye Winga Machachali.`);
+    btnOpenWhatsapp.href = `https://wa.me/${intPhone}?text=${msg}`;
+
+    contactChoiceModal.style.display = "flex";
+};
+
+if (closeContactChoiceModal) {
+    closeContactChoiceModal.addEventListener("click", () => {
+        contactChoiceModal.style.display = "none";
+    });
 }
 
 // Open Order Modal
@@ -179,6 +213,9 @@ closeOrderModal.addEventListener("click", () => {
 window.addEventListener("click", (e) => {
     if (e.target === orderModal) {
         orderModal.style.display = "none";
+    }
+    if (e.target === contactChoiceModal) {
+        contactChoiceModal.style.display = "none";
     }
 });
 

@@ -34,9 +34,9 @@
                 <li><a href="#about">Kuhusu App</a></li>
                 <li><a href="#contact">Mawasiliano</a></li>
             </ul>
-            <a href="https://wa.me/255680234423?text=Habari%20Winga%20Machachali,%20nahitaji%20msaada" target="_blank" class="btn btn-whatsapp-top">
+            <button onclick="openContactModal('0680234423', 'Winga Machachali Support', 'Admin')" class="btn btn-whatsapp-top">
                 <i class="fab fa-whatsapp"></i> 0680234423
-            </a>
+            </button>
         </div>
     </nav>
 
@@ -190,7 +190,7 @@
         </div>
     </section>
 
-    <!-- SECTION 5: KUHUSU APP (MAELEZO YA ZIADA YAKO CHINI) -->
+    <!-- SECTION 5: KUHUSU APP -->
     <section id="about" class="about-section">
         <div class="container">
             <div class="section-title">
@@ -263,6 +263,30 @@
         </div>
     </div>
 
+    <!-- CONTACT CHOICE MODAL (BATANI MBILI: PIGA SIMU / WHATSAPP) -->
+    <div id="contactChoiceModal" class="modal-overlay" style="display: none;">
+        <div class="modal-card" style="text-align: center;">
+            <button id="closeContactChoiceModal" class="modal-close-btn"><i class="fas fa-times"></i></button>
+            <div class="modal-header" style="border-bottom: none; padding-bottom: 0;">
+                <div style="font-size: 2.5rem; color: var(--primary-orange); margin-bottom: 10px;">
+                    <i class="fas fa-headset"></i>
+                </div>
+                <h3 style="font-size: 1.3rem;">Mawasiliano na Muuzaji</h3>
+                <p id="contactChoiceSub" style="color: var(--text-gray); font-size: 0.9rem; margin-top: 5px;">Chagua njia unayotaka kuwasiliana nayo:</p>
+                <div id="contactPhoneDisplay" style="font-size: 1.2rem; font-weight: 700; color: var(--primary-orange); margin: 10px 0;">0680234423</div>
+            </div>
+
+            <div class="contact-buttons-container" style="display: flex; flex-direction: column; gap: 15px; margin-top: 15px;">
+                <a id="btnCallPhone" href="tel:0680234423" class="btn btn-call-action" style="padding: 14px; font-size: 1rem; justify-content: center;">
+                    <i class="fas fa-phone-alt"></i> Piga Simu
+                </a>
+                <a id="btnOpenWhatsapp" href="https://wa.me/255680234423" target="_blank" class="btn btn-whatsapp-action" style="padding: 14px; font-size: 1rem; justify-content: center;">
+                    <i class="fab fa-whatsapp"></i> WhatsApp
+                </a>
+            </div>
+        </div>
+    </div>
+
     <!-- Footer & Contact -->
     <footer id="contact" class="footer">
         <div class="container footer-container">
@@ -272,7 +296,7 @@
             </div>
             <div class="footer-contact">
                 <h4>Mawasiliano na Msaada</h4>
-                <p><i class="fab fa-whatsapp" style="color: #25D366;"></i> WhatsApp / Simu: <a href="https://wa.me/255680234423" style="color: var(--primary-orange); text-decoration: none;"><strong>0680234423</strong></a></p>
+                <p><i class="fab fa-whatsapp" style="color: #25D366;"></i> WhatsApp / Simu: <a href="javascript:void(0)" onclick="openContactModal('0680234423', 'Winga Machachali Support', 'Admin')" style="color: var(--primary-orange); text-decoration: none;"><strong>0680234423</strong></a></p>
                 <p><i class="fas fa-envelope"></i> Barua pepe: <strong>support@wingamachachali.co.tz</strong></p>
             </div>
         </div>
@@ -294,7 +318,7 @@
             <i class="fas fa-download"></i>
             <span>Pakua APK</span>
         </a>
-        <a href="https://wa.me/255680234423?text=Habari%20Winga%20Machachali" target="_blank" class="app-nav-item">
+        <a href="javascript:void(0)" onclick="openContactModal('0680234423', 'Winga Machachali Support', 'Admin')" class="app-nav-item">
             <i class="fab fa-whatsapp"></i>
             <span>Msaada</span>
         </a>
