@@ -223,7 +223,7 @@ async function loadAdminData() {
             `).join("");
         }
 
-        // Fetch Listings
+        // Fetch Listings (Soko) with Direct Call Button to Farmer/Seller
         const listingsSnap = await getDocs(query(collection(db, "chickens"), orderBy("datePosted", "desc")));
         const listings = [];
         listingsSnap.forEach(docSnap => {
@@ -234,16 +234,24 @@ async function loadAdminData() {
         if (listings.length === 0) {
             adminListingsContent.innerHTML = "<p style='text-align:center; padding:30px; color:var(--text-gray);'>Hakuna matangazo sokoni kwa sasa.</p>";
         } else {
-            adminListingsContent.innerHTML = listings.map(l => `
-                <div style="display:flex; align-items:center; justify-content:space-between; background:#121212; border:1px solid var(--card-border); border-radius:10px; padding:12px; margin-bottom:10px;">
-                    <div>
+            adminListingsContent.innerHTML = listings.map(l => {
+                const farmerPhone = l.farmerPhone || "0680234423";
+                return `
+                <div style="background:#121212; border:1px solid var(--card-border); border-radius:10px; padding:15px; margin-bottom:12px;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
                         <strong style="font-size:0.9rem; color:var(--text-white);">${l.title || 'Tangazo'}</strong>
-                        <p style="font-size:0.8rem; color:var(--primary-orange);">${Number(l.price || 0).toLocaleString()} TZS • ${l.category || ''} (${l.location || ''})</p>
-                        <p style="font-size:0.75rem; color:var(--text-gray);">Muuzaji: ${l.farmerName || ''} (${l.farmerPhone || ''})</p>
+                        <span style="font-size:0.75rem; background:rgba(255,152,0,0.15); color:var(--primary-orange); padding:2px 8px; border-radius:4px;">${l.category || 'Kuku'}</span>
                     </div>
-                    <button onclick="window.deleteListing('${l.id}')" style="background:#E74C3C; color:#fff; border:none; padding:8px 12px; border-radius:6px; font-size:0.8rem; cursor:pointer;"><i class="fas fa-trash"></i></button>
+                    <p style="font-size:0.85rem; font-weight:700; color:var(--primary-orange);">${Number(l.price || 0).toLocaleString()} TZS • Idadi: ${l.quantity || '1'}</p>
+                    <p style="font-size:0.8rem; color:var(--text-gray);">Eneo: ${l.location || 'Tanzania'}</p>
+                    <p style="font-size:0.8rem; color:var(--text-gray);">Muuzaji: <strong>${l.farmerName || 'Mfugaji'}</strong> (${farmerPhone})</p>
+                    <div style="display:flex; gap:10px; margin-top:12px;">
+                        <a href="tel:${farmerPhone}" style="flex:1; background:#2E7D32; color:#fff; text-align:center; padding:8px; border-radius:6px; font-size:0.8rem; text-decoration:none; font-weight:600;"><i class="fas fa-phone-alt"></i> Piga Simu Muuzaji</a>
+                        <button onclick="window.deleteListing('${l.id}')" style="background:#E74C3C; color:#fff; border:none; padding:8px 12px; border-radius:6px; font-size:0.8rem; font-weight:700; cursor:pointer;"><i class="fas fa-trash"></i> Futa</button>
+                    </div>
                 </div>
-            `).join("");
+            `;
+            }).join("");
         }
 
     } catch (error) {
@@ -652,10 +660,10 @@ if (postChickenForm) {
         e.preventDefault();
 
         const title = document.getElementById("postTitle").value;
-        const category = document.getElementById("postCategory.value") || document.getElementById("postCategory").value;
+        const category = document.getElementById("postCategory").value;
         const price = parseFloat(document.getElementById("postPrice").value) || 0;
         const quantity = document.getElementById("postQuantity").value;
-        const location = document.getElementById("postLocation.value") || document.getElementById("postLocation").value;
+        const location = document.getElementById("postLocation").value;
         const farmerName = document.getElementById("postFarmerName").value;
         const farmerPhone = document.getElementById("postFarmerPhone").value || "0680234423";
         const description = document.getElementById("postDescription").value;
@@ -664,10 +672,10 @@ if (postChickenForm) {
 
         const newListing = {
             title,
-            category: document.getElementById("postCategory").value,
+            category,
             price,
             quantity,
-            location: document.getElementById("postLocation").value,
+            location,
             imageUrl: finalImageUrl,
             farmerName,
             farmerPhone,
