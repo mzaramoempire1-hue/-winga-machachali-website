@@ -29,6 +29,8 @@ const searchInput = document.getElementById("searchInput");
 const clearSearch = document.getElementById("clearSearch");
 const categoriesFilter = document.getElementById("categoriesFilter");
 const postChickenForm = document.getElementById("postChickenForm");
+const menuToggleBtn = document.getElementById("menuToggleBtn");
+const navLinks = document.getElementById("navLinks");
 
 // Order Modal Elements
 const orderModal = document.getElementById("orderModal");
@@ -50,10 +52,32 @@ const contactPhoneDisplay = document.getElementById("contactPhoneDisplay");
 const btnCallPhone = document.getElementById("btnCallPhone");
 const btnOpenWhatsapp = document.getElementById("btnOpenWhatsapp");
 
+// Toggle Nav Menu on Mobile
+if (menuToggleBtn && navLinks) {
+    menuToggleBtn.addEventListener("click", () => {
+        if (navLinks.style.display === "flex") {
+            navLinks.style.display = "none";
+        } else {
+            navLinks.style.display = "flex";
+            navLinks.style.flexDirection = "column";
+            navLinks.style.position = "absolute";
+            navLinks.style.top = "60px";
+            navLinks.style.left = "0";
+            navLinks.style.width = "100%";
+            navLinks.style.backgroundColor = "#1E1E1E";
+            navLinks.style.padding = "20px";
+            navLinks.style.boxShadow = "0 10px 20px rgba(0,0,0,0.5)";
+        }
+    });
+}
+
 // Smooth scrolling for navigation links
 document.querySelectorAll('a[href^="#"]').forEach(anchor => {
     anchor.addEventListener('click', function (e) {
         e.preventDefault();
+        if (navLinks && window.innerWidth <= 768) {
+            navLinks.style.display = "none";
+        }
         const target = document.querySelector(this.getAttribute('href'));
         if (target) {
             target.scrollIntoView({ behavior: 'smooth' });
@@ -83,7 +107,7 @@ function initFirestoreListener() {
     });
 }
 
-// Render Listings based on filters
+// Render Listings based on filters in a 2-Column Grid
 function renderListings() {
     listingsLoading.style.display = "none";
 
@@ -112,21 +136,25 @@ function renderListings() {
     }
 
     noListings.style.display = "none";
+
     listingsGrid.innerHTML = filtered.map(item => {
         const priceNum = Number(item.price || 0);
         const priceFormatted = priceNum.toLocaleString() + " TZS";
-        const imageUrl = item.imageUrl && item.imageUrl.startsWith("http")
-            ? item.imageUrl
-            : "https://images.unsplash.com/photo-1548550023-2bdb3c5beed7?auto=format&fit=crop&w=600&q=80";
+
+        // Show ONLY the user-uploaded image. DO NOT auto-assign random Unsplash pictures!
+        const hasUserImage = item.imageUrl && item.imageUrl.trim().startsWith("http");
+        const imageElement = hasUserImage
+            ? `<img src="${item.imageUrl}" alt="${item.title}">`
+            : `<div class="placeholder-no-img"><i class="fas fa-drumstick-bite"></i><span>Picha haijatumiwa</span></div>`;
 
         const phone = item.farmerPhone || "0680234423";
         const safeTitle = escapeHtml(item.title || '');
-        const safeFarmer = escapeHtml(item.farmerName || 'Muuzaji');
+        const safeFarmer = escapeHtml(item.farmerName || 'Mfugaji');
 
         return `
             <div class="listing-card">
                 <div class="listing-img">
-                    <img src="${imageUrl}" alt="${item.title}" onerror="this.src='https://images.unsplash.com/photo-1548550023-2bdb3c5beed7?auto=format&fit=crop&w=600&q=80'">
+                    ${imageElement}
                 </div>
                 <div class="listing-body">
                     <span class="listing-qty">${item.category || 'Kuku'} • Idadi: ${item.quantity || '1'}</span>
@@ -137,14 +165,14 @@ function renderListings() {
                     <div class="listing-location">
                         <i class="fas fa-map-marker-alt"></i> ${item.location || 'Tanzania'}
                     </div>
-                    <div style="font-size: 0.8rem; color: #aaa; margin-top: 4px;">
+                    <div class="listing-farmer">
                         Muuzaji: <strong>${item.farmerName || 'Mfugaji'}</strong>
                     </div>
                     <div class="listing-actions">
                         <button class="order-btn-action" onclick="openOrderModal('${item.id || ''}', '${safeTitle}', ${priceNum})">
-                            <i class="fas fa-shopping-cart"></i> Weka Oda
+                            <i class="fas fa-shopping-cart"></i> Oda
                         </button>
-                        <button class="contact-btn-action" onclick="openContactModal('${phone}', '${safeTitle}', '${safeFarmer}')">
+                        <button class="contact-btn-action" onclick="openContactModal('${phone}', '${safeTitle}', '${safeFarmer}')" title="Mawasiliano">
                             <i class="fab fa-whatsapp"></i>
                         </button>
                     </div>
@@ -166,12 +194,16 @@ window.openContactModal = function(phone, title, farmerName) {
 
     contactPhoneDisplay.innerText = cleanedPhone;
     if (farmerName && farmerName !== 'Admin') {
-        contactChoiceSub.innerText = `Chagua njia ya kuwasiliana na ${farmerName} (${title || 'Kuku'}):`;
+        contactChoiceSub.innerText = `Kuwasiliana na ${farmerName} (${title || 'Kuku'}):`;
     } else {
-        contactChoiceSub.innerText = `Chagua njia ya kuwasiliana na Huduma kwa Wateja (0680234423):`;
+        contactChoiceSub.innerText = `Kuwasiliana na Huduma kwa Wateja (${cleanedPhone}):`;
     }
 
-    btnCallPhone.href = `tel:${cleanedPhone}`;
+    // Direct phone call handler (does not navigate off the website)
+    btnCallPhone.onclick = function() {
+        window.location.href = 'tel:' + cleanedPhone;
+    };
+
     const msg = encodeURIComponent(`Habari ${farmerName || 'Muuzaji'}, nimeona tangazo lako la "${title || 'Kuku'}" kwenye Winga Machachali.`);
     btnOpenWhatsapp.href = `https://wa.me/${intPhone}?text=${msg}`;
 

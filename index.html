@@ -20,40 +20,52 @@
 </head>
 <body>
 
-    <!-- Top Navigation Bar -->
+    <!-- TOP NAVIGATION BAR (MISTARI MITATU, LOGO, TANGAZA, ODA & WASAPU JUU) -->
     <nav class="navbar">
         <div class="container nav-container">
-            <div class="logo">
-                <span class="logo-icon">🐓</span>
-                <span class="logo-text">Winga <span>Machachali</span></span>
+            <div class="nav-left">
+                <button class="menu-toggle-btn" id="menuToggleBtn" title="Fungua Menyu">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <div class="logo">
+                    <span class="logo-icon">🐓</span>
+                    <span class="logo-text">Winga <span>Machachali</span></span>
+                </div>
             </div>
-            <ul class="nav-links">
-                <li><a href="#marketplace">Soko (Live)</a></li>
-                <li><a href="#post-listing">Weka Tangazo</a></li>
-                <li><a href="#download">Pakua APK</a></li>
-                <li><a href="#about">Kuhusu App</a></li>
-                <li><a href="#contact">Mawasiliano</a></li>
+
+            <ul class="nav-links" id="navLinks">
+                <li><a href="#marketplace"><i class="fas fa-store"></i> Soko (Live)</a></li>
+                <li><a href="#post-listing"><i class="fas fa-plus-circle"></i> Tangaza Kuku</a></li>
+                <li><a href="#download"><i class="fas fa-download"></i> Pakua APK</a></li>
+                <li><a href="#about"><i class="fas fa-info-circle"></i> Kuhusu App</a></li>
+                <li><a href="#contact"><i class="fas fa-phone-alt"></i> Mawasiliano</a></li>
             </ul>
-            <button onclick="openContactModal('0680234423', 'Winga Machachali Support', 'Admin')" class="btn btn-whatsapp-top">
-                <i class="fab fa-whatsapp"></i> 0680234423
-            </button>
+
+            <div class="nav-right-actions">
+                <a href="#post-listing" class="top-action-btn" title="Tangaza Kuku">
+                    <i class="fas fa-plus"></i> <span class="hide-mobile">Tangaza</span>
+                </a>
+                <button onclick="openContactModal('0680234423', 'Winga Machachali Support', 'Admin')" class="btn-whatsapp-top">
+                    <i class="fab fa-whatsapp"></i> <span class="hide-mobile">0680234423</span>
+                </button>
+            </div>
         </div>
     </nav>
 
-    <!-- SECTION 1: LIVE MARKETPLACE (YOWE JUU KABISA) -->
+    <!-- SECTION 1: LIVE MARKETPLACE (JUU KABISA - ROW 2 GRID / SCREEN IGAWANYIKE SEHEMU MBILI) -->
     <section id="marketplace" class="marketplace-section hero-top">
         <div class="container">
             <div class="hero-header-banner">
                 <div class="badge"><i class="fas fa-check-circle"></i> Soko Kuu la Kuku Tanzania - Live</div>
                 <h1>🐓 Soko la Winga Machachali</h1>
-                <p>Nunua na uuze kuku, vifaranga, na mayai kwa uhakika kote Tanzania. Unachokiona hapa ndicho kilichopo kwenye App!</p>
+                <p>Nunua na uuze kuku, vifaranga, na mayai kwa uhakika kote Tanzania.</p>
             </div>
 
             <!-- Search Bar -->
             <div class="search-bar-container">
                 <div class="search-input-wrapper">
                     <i class="fas fa-search search-icon"></i>
-                    <input type="text" id="searchInput" aria-label="Tafuta kuku" placeholder="Tafuta kuku, aina, au mkoa...">
+                    <input type="text" id="searchInput" aria-label="Tafuta kuku" placeholder="Tafuta kuku, aina, mkoa...">
                     <button id="clearSearch" style="display: none;"><i class="fas fa-times"></i></button>
                 </div>
             </div>
@@ -69,12 +81,12 @@
                 <button class="chip" data-category="Mayai">Mayai</button>
             </div>
 
-            <!-- Listings Grid -->
+            <!-- Listings Grid (SEHEMU MBILI / 2 COLUMNS) -->
             <div id="listingsLoading" class="loading-state">
                 <i class="fas fa-spinner fa-spin"></i> Inapakia matangazo kutoka sokoni...
             </div>
-            <div id="listingsGrid" class="listings-grid">
-                <!-- Dynamically loaded listings go here -->
+            <div id="listingsGrid" class="listings-grid-2col">
+                <!-- Dynamically loaded 2-column listings go here -->
             </div>
             <div id="noListings" class="no-listings" style="display: none;">
                 <p>Hakuna matangazo yaliyopatikana kwa sasa.</p>
@@ -124,8 +136,8 @@
                             <input type="text" id="postLocation" required placeholder="Eneo ulipo...">
                         </div>
                         <div class="form-group">
-                            <label for="postImageUrl">Picha (URL ya Picha au Link)</label>
-                            <input type="text" id="postImageUrl" placeholder="https://... auacha wazi iwe na picha chaguo-msingi">
+                            <label for="postImageUrl">Picha (URL ya Picha - Sio Lazima)</label>
+                            <input type="text" id="postImageUrl" placeholder="Link ya picha uliyopiga (Kama ipo)">
                         </div>
                     </div>
                     <div class="form-row">
@@ -263,7 +275,7 @@
         </div>
     </div>
 
-    <!-- CONTACT CHOICE MODAL (BATANI MBILI: PIGA SIMU / WHATSAPP) -->
+    <!-- CONTACT CHOICE MODAL (PIGA SIMU / WHATSAPP) -->
     <div id="contactChoiceModal" class="modal-overlay" style="display: none;">
         <div class="modal-card" style="text-align: center;">
             <button id="closeContactChoiceModal" class="modal-close-btn"><i class="fas fa-times"></i></button>
@@ -277,9 +289,9 @@
             </div>
 
             <div class="contact-buttons-container" style="display: flex; flex-direction: column; gap: 15px; margin-top: 15px;">
-                <a id="btnCallPhone" href="tel:0680234423" class="btn btn-call-action" style="padding: 14px; font-size: 1rem; justify-content: center;">
+                <button id="btnCallPhone" class="btn btn-call-action" style="padding: 14px; font-size: 1rem; justify-content: center; width: 100%;">
                     <i class="fas fa-phone-alt"></i> Piga Simu
-                </a>
+                </button>
                 <a id="btnOpenWhatsapp" href="https://wa.me/255680234423" target="_blank" class="btn btn-whatsapp-action" style="padding: 14px; font-size: 1rem; justify-content: center;">
                     <i class="fab fa-whatsapp"></i> WhatsApp
                 </a>
