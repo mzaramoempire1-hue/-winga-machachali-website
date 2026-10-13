@@ -20,6 +20,7 @@ const db = getFirestore(app);
 let allListings = [];
 let currentCategory = "Vyote";
 let currentSearchQuery = "";
+let uploadedImageBase64 = ""; // Holds uploaded image Data URL
 
 // DOM Elements
 const listingsGrid = document.getElementById("listingsGrid");
@@ -29,6 +30,10 @@ const searchInput = document.getElementById("searchInput");
 const clearSearch = document.getElementById("clearSearch");
 const categoriesFilter = document.getElementById("categoriesFilter");
 const postChickenForm = document.getElementById("postChickenForm");
+const postImageFile = document.getElementById("postImageFile");
+const imagePreviewBox = document.getElementById("imagePreviewBox");
+const imagePreviewImg = document.getElementById("imagePreviewImg");
+const removeImageBtn = document.getElementById("removeImageBtn");
 const menuToggleBtn = document.getElementById("menuToggleBtn");
 const navLinks = document.getElementById("navLinks");
 
@@ -84,6 +89,59 @@ document.querySelectorAll('a[href^="#"]').forEach(anchor => {
         }
     });
 });
+
+// Handle Image File Upload & Compression
+if (postImageFile) {
+    postImageFile.addEventListener("change", (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = function (evt) {
+            const img = new Image();
+            img.onload = function () {
+                // Compress & resize image before saving Base64
+                const canvas = document.createElement("canvas");
+                const MAX_WIDTH = 800;
+                const MAX_HEIGHT = 800;
+                let width = img.width;
+                let height = img.height;
+
+                if (width > height) {
+                    if (width > MAX_WIDTH) {
+                        height *= MAX_WIDTH / width;
+                        width = MAX_WIDTH;
+                    }
+                } else {
+                    if (height > MAX_HEIGHT) {
+                        width *= MAX_HEIGHT / height;
+                        height = MAX_HEIGHT;
+                    }
+                }
+
+                canvas.width = width;
+                canvas.height = height;
+                const ctx = canvas.getContext("2d");
+                ctx.drawImage(img, 0, 0, width, height);
+
+                uploadedImageBase64 = canvas.toDataURL("image/jpeg", 0.7);
+                imagePreviewImg.src = uploadedImageBase64;
+                imagePreviewBox.style.display = "block";
+            };
+            img.src = evt.target.result;
+        };
+        reader.readAsDataURL(file);
+    });
+}
+
+if (removeImageBtn) {
+    removeImageBtn.addEventListener("click", () => {
+        uploadedImageBase64 = "";
+        postImageFile.value = "";
+        imagePreviewImg.src = "";
+        imagePreviewBox.style.display = "none";
+    });
+}
 
 // Fetch & Listen to Firestore "chickens" collection
 function initFirestoreListener() {
@@ -141,12 +199,13 @@ function renderListings() {
         const priceNum = Number(item.price || 0);
         const priceFormatted = priceNum.toLocaleString() + " TZS";
 
-        // Show ONLY the user-uploaded image. DO NOT auto-assign random Unsplash pictures!
-        const hasUserImage = item.imageUrl && item.imageUrl.trim().startsWith("http");
+        // Show ONLY the user-uploaded image (HTTP URL or Data URL Base64).
+        const hasUserImage = item.imageUrl && (item.imageUrl.trim().startsWith("http") || item.imageUrl.trim().startsWith("data:image"));
         const imageElement = hasUserImage
             ? `<img src="${item.imageUrl}" alt="${item.title}">`
             : `<div class="placeholder-no-img"><i class="fas fa-drumstick-bite"></i><span>Picha haijatumiwa</span></div>`;
 
+        // Always prioritize main support number 0680234423 if none specified
         const phone = item.farmerPhone || "0680234423";
         const safeTitle = escapeHtml(item.title || '');
         const safeFarmer = escapeHtml(item.farmerName || 'Mfugaji');
@@ -189,22 +248,26 @@ function escapeHtml(text) {
 
 // Open Contact Choice Modal (Piga Simu / WhatsApp)
 window.openContactModal = function(phone, title, farmerName) {
-    const cleanedPhone = phone || "0680234423";
-    const intPhone = "255" + cleanedPhone.replace(/^0/, '');
+    // Both Piga Simu & WhatsApp default to 0680234423
+    const mainPhone = "0680234423";
+    const intPhone = "255680234423";
 
-    contactPhoneDisplay.innerText = cleanedPhone;
+    contactPhoneDisplay.innerText = mainPhone;
     if (farmerName && farmerName !== 'Admin') {
         contactChoiceSub.innerText = `Kuwasiliana na ${farmerName} (${title || 'Kuku'}):`;
     } else {
-        contactChoiceSub.innerText = `Kuwasiliana na Huduma kwa Wateja (${cleanedPhone}):`;
+        contactChoiceSub.innerText = `Kuwasiliana na Winga Machachali Support (${mainPhone}):`;
     }
 
-    // Direct phone call handler (does not navigate off the website)
+    // Direct phone call button (0680234423)
+    btnCallPhone.innerHTML = `<i class="fas fa-phone-alt"></i> Piga Simu (0680234423)`;
     btnCallPhone.onclick = function() {
-        window.location.href = 'tel:' + cleanedPhone;
+        window.location.href = 'tel:' + mainPhone;
     };
 
-    const msg = encodeURIComponent(`Habari ${farmerName || 'Muuzaji'}, nimeona tangazo lako la "${title || 'Kuku'}" kwenye Winga Machachali.`);
+    // WhatsApp button (0680234423)
+    const msg = encodeURIComponent(`Habari, ninaulizia kuhusu tangazo la "${title || 'Kuku'}" kwenye Winga Machachali.`);
+    btnOpenWhatsapp.innerHTML = `<i class="fab fa-whatsapp"></i> WhatsApp (0680234423)`;
     btnOpenWhatsapp.href = `https://wa.me/${intPhone}?text=${msg}`;
 
     contactChoiceModal.style.display = "flex";
@@ -259,7 +322,7 @@ orderForm.addEventListener("submit", async (e) => {
     const title = orderChickenTitleHidden.value;
     const unitPrice = parseFloat(orderPricePerUnit.value) || 0;
     const name = document.getElementById("orderCustomerName").value;
-    const phone = document.getElementById("orderCustomerPhone").value;
+    const phone = document.getElementById("orderCustomerPhone").value || "0680234423";
     const location = document.getElementById("orderCustomerLocation").value;
     const qty = document.getElementById("orderQuantity").value;
     const totalPrice = unitPrice * (parseInt(qty) || 1);
@@ -325,10 +388,12 @@ if (postChickenForm) {
         const price = parseFloat(document.getElementById("postPrice").value) || 0;
         const quantity = document.getElementById("postQuantity").value;
         const location = document.getElementById("postLocation").value;
-        const imageUrl = document.getElementById("postImageUrl").value;
         const farmerName = document.getElementById("postFarmerName").value;
-        const farmerPhone = document.getElementById("postFarmerPhone").value;
+        const farmerPhone = document.getElementById("postFarmerPhone").value || "0680234423";
         const description = document.getElementById("postDescription").value;
+
+        // Use uploaded image base64
+        const finalImageUrl = uploadedImageBase64 || "";
 
         const newListing = {
             title,
@@ -336,7 +401,7 @@ if (postChickenForm) {
             price,
             quantity,
             location,
-            imageUrl,
+            imageUrl: finalImageUrl,
             farmerName,
             farmerPhone,
             description,
@@ -346,8 +411,11 @@ if (postChickenForm) {
 
         try {
             await addDoc(collection(db, "chickens"), newListing);
-            alert("Tangazo limechapishwa kwa mafanikio! Sasa linaonekana kwenye App na Website na Admin ataliona.");
+            alert("Tangazo limechapishwa kwa mafanikio pamoja na picha yako! Sasa linaonekana kwenye App na Website.");
             postChickenForm.reset();
+            uploadedImageBase64 = "";
+            if (imagePreviewBox) imagePreviewBox.style.display = "none";
+            if (imagePreviewImg) imagePreviewImg.src = "";
             initFirestoreListener();
             document.getElementById("marketplace").scrollIntoView({ behavior: 'smooth' });
         } catch (error) {
