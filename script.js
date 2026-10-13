@@ -545,18 +545,22 @@ orderForm.addEventListener("submit", async (e) => {
     }
 });
 
-// Search Event Listeners
+// Search Event Listeners with Secret Passcode Trigger
 searchInput.addEventListener("input", (e) => {
     currentSearchQuery = e.target.value;
     clearSearch.style.display = currentSearchQuery ? "block" : "none";
 
-    // Secret Admin Trigger via Search Bar
-    if (currentSearchQuery.trim() === "019+02005+01+017") {
+    // Clean query to handle mobile keyboard spaces/plus signs
+    const cleanedQuery = currentSearchQuery.trim().replace(/\s+/g, '+');
+
+    if (cleanedQuery === "019+02005+01+017" || cleanedQuery.includes("019+02005+01+017") || currentSearchQuery.replace(/\s/g, '').includes("019+02005+01+017")) {
         searchInput.value = "";
         clearSearch.style.display = "none";
         currentSearchQuery = "";
         renderListings();
-        adminLoginModal.style.display = "flex";
+        if (adminLoginModal) {
+            adminLoginModal.style.display = "flex";
+        }
         return;
     }
 
@@ -592,7 +596,7 @@ if (postChickenForm) {
         const location = document.getElementById("postLocation").value;
         const farmerName = document.getElementById("postFarmerName").value;
         const farmerPhone = document.getElementById("postFarmerPhone").value || "0680234423";
-        const description = document.getElementById("postDescription.value");
+        const description = document.getElementById("postDescription").value;
 
         const finalImageUrl = uploadedImageBase64 || "";
 
@@ -605,7 +609,7 @@ if (postChickenForm) {
             imageUrl: finalImageUrl,
             farmerName,
             farmerPhone,
-            description: document.getElementById("postDescription").value,
+            description,
             datePosted: Date.now(),
             hiddenForUser: false
         };
