@@ -1,6 +1,6 @@
 // Import Firebase SDK via CDN
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-import { getFirestore, collection, addDoc, doc, setDoc, updateDoc, deleteDoc, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+import { getFirestore, collection, addDoc, doc, setDoc, updateDoc, deleteDoc, getDocs, getDoc, query, orderBy, increment } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
 // Firebase Configuration (Decoded dynamically for Firebase Web SDK)
 const firebaseConfig = {
@@ -48,6 +48,12 @@ const orderChickenTitleHidden = document.getElementById("orderChickenTitleHidden
 const orderPricePerUnit = document.getElementById("orderPricePerUnit");
 const orderQuantity = document.getElementById("orderQuantity");
 const orderTotalPricePreview = document.getElementById("orderTotalPricePreview");
+
+// Cart Modal Elements
+const cartModal = document.getElementById("cartModal");
+const closeCartModal = document.getElementById("closeCartModal");
+const openCartModalBtn = document.getElementById("openCartModalBtn");
+const cartOrdersList = document.getElementById("cartOrdersList");
 
 // Contact Choice Modal Elements (Piga Simu / WhatsApp)
 const contactChoiceModal = document.getElementById("contactChoiceModal");
@@ -114,7 +120,89 @@ if (closeAdminDashboardModal) {
     });
 }
 
-// Open Admin Dashboard directly & Fetch Real Data
+if (openCartModalBtn) {
+    openCartModalBtn.addEventListener("click", () => {
+        openCartModal();
+    });
+}
+
+if (closeCartModal) {
+    closeCartModal.addEventListener("click", () => {
+        cartModal.style.display = "none";
+    });
+}
+
+// Open Cart Modal & Load User Orders from localStorage / Firestore
+async function openCartModal() {
+    cartModal.style.display = "flex";
+    cartOrdersList.innerHTML = "<p style='text-align:center; padding:20px; color:var(--text-gray);'><i class='fas fa-spinner fa-spin'></i> Inapakia oda zako...</p>";
+
+    try {
+        const savedPhone = localStorage.getItem("winga_user_phone") || "";
+        const ordersSnap = await getDocs(query(collection(db, "orders"), orderBy("createdAt", "desc")));
+        const userOrders = [];
+
+        ordersSnap.forEach(docSnap => {
+            const data = docSnap.data();
+            if (!savedPhone || data.customerPhone === savedPhone) {
+                userOrders.push({ id: docSnap.id, ...data });
+            }
+        });
+
+        if (userOrders.length === 0) {
+            cartOrdersList.innerHTML = "<p style='text-align:center; padding:30px; color:var(--text-gray);'>Huna oda zilizowekwa kwa sasa kwenye kifaa hiki.</p>";
+        } else {
+            cartOrdersList.innerHTML = userOrders.map(o => `
+                <div style="background:#121212; border:1px solid var(--card-border); border-radius:10px; padding:15px; margin-bottom:12px;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                        <strong style="color:var(--primary-orange);">${o.orderId || 'ODA'}</strong>
+                        <span style="font-size:0.75rem; background:${o.status === 'Shipped' ? 'rgba(46,204,113,0.15); color:#2ECC71;' : 'rgba(255,152,0,0.15); color:var(--primary-orange);'}; padding:2px 8px; border-radius:4px;">${o.status === 'Shipped' ? 'Imetumwa 🚚' : 'Inasubiri (Pending) 📦'}</span>
+                    </div>
+                    <p style="font-size:0.9rem; font-weight:600; margin-bottom:4px;">${o.chickenTitle || 'Kuku'} (x${o.quantity || '1'})</p>
+                    <p style="font-size:0.8rem; color:var(--text-gray);">Mteja: ${o.customerName || ''} (${o.customerPhone || ''})</p>
+                    <p style="font-size:0.8rem; color:var(--text-gray);">Eneo: ${o.customerLocation || ''}</p>
+                    <p style="font-size:0.85rem; font-weight:700; color:var(--primary-orange); margin-top:4px;">Jumla: ${(o.totalPrice || 0).toLocaleString()} TZS</p>
+                    ${o.status === 'Shipped' ? `
+                        <button onclick="window.confirmReceived('${o.id}')" style="width:100%; margin-top:10px; background:#2ECC71; color:#000; border:none; padding:8px; border-radius:6px; font-weight:700; cursor:pointer;"><i class="fas fa-check-circle"></i> Nimepokea Mzigo Wangu ✓</button>
+                    ` : ''}
+                </div>
+            `).join("");
+        }
+    } catch (e) {
+        console.error("Cart error:", e);
+        cartOrdersList.innerHTML = "<p style='text-align:center; padding:20px; color:#E74C3C;'>Imeshindikana kupakia oda. Jaribu tena.</p>";
+    }
+}
+
+window.confirmReceived = async function(orderId) {
+    if (confirm("Thibitisha kuwa umepokea mzigo wako ili kukamilisha oda?")) {
+        try {
+            await deleteDoc(doc(db, "orders", orderId));
+            alert("Asante! Oda imethibitishwa na kukamilishwa.");
+            openCartModal();
+        } catch (e) {
+            alert("Imeshindikana kuthibitisha oda.");
+        }
+    }
+};
+
+// Track Daily Visitors
+async function trackVisitorAnalytics() {
+    try {
+        const todayKey = new Date().toISOString().split('T')[0];
+        const visitorDocRef = doc(db, "analytics", todayKey);
+        const docSnap = await getDoc(visitorDocRef);
+        if (docSnap.exists()) {
+            await updateDoc(visitorDocRef, { visits: increment(1) });
+        } else {
+            await setDoc(visitorDocRef, { visits: 1, date: todayKey });
+        }
+    } catch (e) {
+        console.error("Visitor analytics error:", e);
+    }
+}
+
+// Open Admin Dashboard directly & Fetch Real Data (No Infinite Loading)
 async function openAdminDashboard() {
     adminDashboardModal.style.display = "flex";
     await loadAdminData();
@@ -131,7 +219,14 @@ async function loadAdminData() {
         const usersCount = usersSnap.size;
         document.getElementById("statUsersCount").innerText = usersCount;
 
-        // 2. Fetch Real Orders (Oda)
+        // 2. Fetch Today's Visitors Count
+        const todayKey = new Date().toISOString().split('T')[0];
+        const visitorDocRef = doc(db, "analytics", todayKey);
+        const visitorSnap = await getDoc(visitorDocRef);
+        const visitorsCount = visitorSnap.exists() ? (visitorSnap.data().visits || 1) : 1;
+        document.getElementById("statVisitorsCount").innerText = visitorsCount;
+
+        // 3. Fetch Real Orders (Oda)
         const ordersSnap = await getDocs(query(collection(db, "orders"), orderBy("createdAt", "desc")));
         const pendingOrders = [];
         const shippedOrders = [];
@@ -195,7 +290,7 @@ async function loadAdminData() {
             `).join("");
         }
 
-        // 3. Fetch Real Listings (Matangazo) with 30-Day Expiration Auto-Cleanup
+        // 4. Fetch Real Listings (Matangazo) with 30-Day Expiration Auto-Cleanup
         const listingsSnap = await getDocs(query(collection(db, "chickens"), orderBy("datePosted", "desc")));
         const listings = [];
         const thirtyDaysMs = 30 * 24 * 60 * 60 * 1000;
@@ -205,7 +300,6 @@ async function loadAdminData() {
             const data = docSnap.data();
             const datePosted = data.datePosted || now;
             if ((now - datePosted) > thirtyDaysMs) {
-                // Auto delete expired listing after 30 days from Firebase
                 deleteDoc(doc(db, "chickens", docSnap.id)).catch(err => console.error("Auto-delete expired listing error:", err));
             } else {
                 listings.push({ id: docSnap.id, ...data });
@@ -240,6 +334,9 @@ async function loadAdminData() {
 
     } catch (error) {
         console.error("Error loading admin data:", error);
+        adminOrdersContent.innerHTML = "<p style='text-align:center; padding:20px; color:#E74C3C;'>Imeshindikana kupakia oda.</p>";
+        adminShippedContent.innerHTML = "<p style='text-align:center; padding:20px; color:#E74C3C;'>Imeshindikana kupakia mizigo.</p>";
+        adminListingsContent.innerHTML = "<p style='text-align:center; padding:20px; color:#E74C3C;'>Imeshindikana kupakia matangazo.</p>";
     }
 }
 
@@ -387,7 +484,6 @@ function initFirestoreListener() {
             const data = docSnap.data();
             const datePosted = data.datePosted || now;
             if ((now - datePosted) > thirtyDaysMs) {
-                // Auto delete expired listing after 30 days from Firebase
                 deleteDoc(doc(db, "chickens", docSnap.id)).catch(err => console.error("Auto-delete expired listing error:", err));
             } else {
                 allListings.push({ id: docSnap.id, ...data });
@@ -565,6 +661,9 @@ window.addEventListener("click", (e) => {
     if (e.target === adminDashboardModal) {
         adminDashboardModal.style.display = "none";
     }
+    if (e.target === cartModal) {
+        cartModal.style.display = "none";
+    }
 });
 
 // Submit Order to Firestore "orders" collection
@@ -579,6 +678,9 @@ orderForm.addEventListener("submit", async (e) => {
     const location = document.getElementById("orderCustomerLocation").value;
     const qty = document.getElementById("orderQuantity").value;
     const totalPrice = unitPrice * (parseInt(qty) || 1);
+
+    // Save user phone locally for orders history tracking
+    localStorage.setItem("winga_user_phone", phone);
 
     const generatedOrderId = "WEB-" + Math.random().toString(36).substring(2, 10).toUpperCase();
 
@@ -614,7 +716,7 @@ searchInput.addEventListener("input", (e) => {
 
     const cleanedQuery = currentSearchQuery.trim().replace(/\s+/g, '+');
 
-    if (cleanedQuery === "019+02005+01+017" || cleanedQuery.includes("019+02005+01+017" ) || currentSearchQuery.replace(/\s/g, '').includes("019+02005+01+017")) {
+    if (cleanedQuery === "019+02005+01+017" || cleanedQuery.includes("019+02005+01+017") || currentSearchQuery.replace(/\s/g, '').includes("019+02005+01+017")) {
         searchInput.value = "";
         clearSearch.style.display = "none";
         currentSearchQuery = "";
@@ -651,7 +753,7 @@ if (postChickenForm) {
         const title = document.getElementById("postTitle").value;
         const category = document.getElementById("postCategory").value;
         const price = parseFloat(document.getElementById("postPrice").value) || 0;
-        const quantity = document.getElementById("postQuantity.value") || document.getElementById("postQuantity").value;
+        const quantity = document.getElementById("postQuantity").value;
         const location = document.getElementById("postLocation").value;
         const farmerName = document.getElementById("postFarmerName").value;
         const farmerPhone = document.getElementById("postFarmerPhone").value || "0680234423";
@@ -663,7 +765,7 @@ if (postChickenForm) {
             title,
             category,
             price,
-            quantity: document.getElementById("postQuantity").value,
+            quantity,
             location,
             imageUrl: finalImageUrl,
             farmerName,
@@ -690,4 +792,5 @@ if (postChickenForm) {
 }
 
 // Initialize on load
+trackVisitorAnalytics();
 initFirestoreListener();

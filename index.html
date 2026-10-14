@@ -20,7 +20,7 @@
 </head>
 <body>
 
-    <!-- TOP NAVIGATION BAR (MISTARI MITATU, LOGO, TANGAZA, ODA & WASAPU JUU) -->
+    <!-- TOP NAVIGATION BAR (MISTARI MITATU, LOGO, CART, TANGAZA, ODA & WASAPU JUU) -->
     <nav class="navbar">
         <div class="container nav-container">
             <div class="nav-left">
@@ -43,6 +43,9 @@
             </ul>
 
             <div class="nav-right-actions">
+                <a href="javascript:void(0)" id="openCartModalBtn" class="top-action-btn" title="Oda Zangu">
+                    <i class="fas fa-shopping-cart"></i> <span class="hide-mobile">Oda Zangu</span>
+                </a>
                 <a href="#post-listing" class="top-action-btn" title="Tangaza Kuku">
                     <i class="fas fa-plus"></i> <span class="hide-mobile">Tangaza</span>
                 </a>
@@ -53,7 +56,7 @@
         </div>
     </nav>
 
-    <!-- SECTION 1: LIVE MARKETPLACE (JUU KABISA - ROW 2 GRID / SCREEN IGAWANYIKE SEHEMU MBILI) -->
+    <!-- SECTION 1: LIVE MARKETPLACE (JUU KABISA - ROW 2 GRID) -->
     <section id="marketplace" class="marketplace-section hero-top">
         <div class="container">
             <div class="hero-header-banner">
@@ -142,7 +145,7 @@
                         </div>
                     </div>
 
-                    <!-- SEHEMU YA KUPAKIA PICHA (CUSTOM LARGE UPLOAD BOX) -->
+                    <!-- SEHEMU YA KUPAKIA PICHA -->
                     <div class="form-group full-width">
                         <label class="upload-label"><i class="fas fa-camera" style="color: var(--primary-orange);"></i> Pakia Picha ya Kuku / Bidhaa Yako</label>
                         <label for="postImageFile" class="custom-upload-zone" id="uploadZone">
@@ -266,7 +269,7 @@
                 <input type="hidden" id="orderPricePerUnit">
 
                 <div class="form-group">
-                    <label for="orderCustomerName">Jina Lako Buu (Customer Name)</label>
+                    <label for="orderCustomerName">Jina Lako Kamili (Customer Name)</label>
                     <input type="text" id="orderCustomerName" required placeholder="Mf: Juma Hamisi">
                 </div>
                 <div class="form-group">
@@ -292,7 +295,21 @@
         </div>
     </div>
 
-    <!-- CONTACT CHOICE MODAL (PIGA SIMU / WHATSAPP - NAMBA YOTE NI 0680234423) -->
+    <!-- MY ORDERS CART MODAL -->
+    <div id="cartModal" class="modal-overlay" style="display: none;">
+        <div class="modal-card" style="max-width: 600px; width: 95%;">
+            <button id="closeCartModal" class="modal-close-btn"><i class="fas fa-times"></i></button>
+            <div class="modal-header">
+                <h3><i class="fas fa-shopping-cart" style="color: var(--primary-orange);"></i> Oda Zangu & Kikapu</h3>
+                <p>Angalia hali ya oda ulizoweka hivi karibuni</p>
+            </div>
+            <div id="cartOrdersList" style="max-height: 400px; overflow-y: auto; margin-top: 15px;">
+                <p style="text-align: center; color: var(--text-gray);">Hakuna oda zilizowekwa bado.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- CONTACT CHOICE MODAL (PIGA SIMU / WHATSAPP) -->
     <div id="contactChoiceModal" class="modal-overlay" style="display: none;">
         <div class="modal-card" style="text-align: center;">
             <button id="closeContactChoiceModal" class="modal-close-btn"><i class="fas fa-times"></i></button>
@@ -333,19 +350,23 @@
                 <p>Taarifa rasmi 100% kutoka kwenye mfumo wa App & Website</p>
             </div>
 
-            <!-- Stats Summary Cards (Watumiaji, Oda, Matangazo) -->
-            <div class="admin-stats-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 15px;">
-                <div style="background:#121212; border:1px solid var(--card-border); padding:10px; border-radius:8px; text-align:center;">
-                    <span style="font-size:0.75rem; color:var(--text-gray);">Watumiaji</span>
-                    <h4 id="statUsersCount" style="font-size:1.1rem; color:var(--primary-orange); margin-top:2px;">0</h4>
+            <!-- Stats Summary Cards (Watumiaji, Wageni, Oda, Matangazo) -->
+            <div class="admin-stats-grid" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 15px;">
+                <div style="background:#121212; border:1px solid var(--card-border); padding:8px; border-radius:8px; text-align:center;">
+                    <span style="font-size:0.7rem; color:var(--text-gray);">Watumiaji</span>
+                    <h4 id="statUsersCount" style="font-size:1rem; color:var(--primary-orange); margin-top:2px;">0</h4>
                 </div>
-                <div style="background:#121212; border:1px solid var(--card-border); padding:10px; border-radius:8px; text-align:center;">
-                    <span style="font-size:0.75rem; color:var(--text-gray);">Oda Zote</span>
-                    <h4 id="statOrdersCount" style="font-size:1.1rem; color:var(--primary-orange); margin-top:2px;">0</h4>
+                <div style="background:#121212; border:1px solid var(--card-border); padding:8px; border-radius:8px; text-align:center;">
+                    <span style="font-size:0.7rem; color:var(--text-gray);">Wageni Leo</span>
+                    <h4 id="statVisitorsCount" style="font-size:1rem; color:var(--primary-orange); margin-top:2px;">0</h4>
                 </div>
-                <div style="background:#121212; border:1px solid var(--card-border); padding:10px; border-radius:8px; text-align:center;">
-                    <span style="font-size:0.75rem; color:var(--text-gray);">Matangazo</span>
-                    <h4 id="statListingsCount" style="font-size:1.1rem; color:var(--primary-orange); margin-top:2px;">0</h4>
+                <div style="background:#121212; border:1px solid var(--card-border); padding:8px; border-radius:8px; text-align:center;">
+                    <span style="font-size:0.7rem; color:var(--text-gray);">Oda Zote</span>
+                    <h4 id="statOrdersCount" style="font-size:1rem; color:var(--primary-orange); margin-top:2px;">0</h4>
+                </div>
+                <div style="background:#121212; border:1px solid var(--card-border); padding:8px; border-radius:8px; text-align:center;">
+                    <span style="font-size:0.7rem; color:var(--text-gray);">Matangazo</span>
+                    <h4 id="statListingsCount" style="font-size:1rem; color:var(--primary-orange); margin-top:2px;">0</h4>
                 </div>
             </div>
 
@@ -366,18 +387,22 @@
         </div>
     </div>
 
-    <!-- Footer & Contact -->
+    <!-- Footer & Wasifu -->
     <footer id="contact" class="footer">
         <div class="container footer-container">
             <div class="footer-info">
                 <h3>🐓 Winga Machachali</h3>
                 <p>Soko Kuu la Kuku Tanzania - Uza kwa Uhakika, Nunua kwa Uaminifu.</p>
+                <div style="margin-top: 15px; display: flex; flex-direction: column; gap: 8px;">
+                    <p><i class="fas fa-globe" style="color: var(--primary-orange);"></i> Website: <a href="https://mzaramoempire1-hue.github.io/-winga-machachali-website/" target="_blank" style="color: var(--primary-orange); text-decoration: none;"><strong>wingamachachali.co.tz</strong></a></p>
+                    <p><i class="fab fa-android" style="color: var(--primary-orange);"></i> App Rasmi: <a href="winga-machachali.apk" download style="color: var(--primary-orange); text-decoration: none;"><strong>Winga Machachali APK (v1.0)</strong> <span style="font-size: 1.2rem;">🐓</span></a></p>
+                </div>
             </div>
             <div class="footer-contact">
                 <h4>Mawasiliano na Msaada</h4>
                 <p><i class="fab fa-whatsapp" style="color: #25D366;"></i> WhatsApp / Simu: <a href="javascript:void(0)" onclick="openContactModal('0680234423', 'Winga Machachali Support', 'Admin')" style="color: var(--primary-orange); text-decoration: none;"><strong>0680234423</strong></a></p>
                 <p><i class="fas fa-envelope"></i> Barua pepe: <strong>support@wingamachachali.co.tz</strong></p>
-                <p><i class="fas fa-user-shield"></i> <a href="javascript:void(0)" onclick="document.getElementById('adminDashboardModal').style.display='flex'; loadAdminData();" style="color: var(--primary-orange); text-decoration: none;"><strong>Dashibodi ya Admin</strong></a></p>
+                <p><i class="fas fa-user-shield"></i> <a href="javascript:void(0)" onclick="openAdminDashboard()" style="color: var(--primary-orange); text-decoration: none;"><strong>Dashibodi ya Admin</strong></a></p>
             </div>
         </div>
         <div class="footer-bottom">
