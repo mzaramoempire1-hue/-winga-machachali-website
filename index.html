@@ -8,10 +8,18 @@
     <meta name="keywords" content="Winga Machachali, soko la kuku, kuku wa kienyeji, kuku wa broiler, vifaranga, mayai tanzania, uza kuku online">
     <meta name="author" content="Winga Machachali">
     <meta name="google-site-verification" content="KCtS-0coJdyEllXh9f63KTLgr-VED_ZhhuhI86AqiiA" />
-    <!-- Open Graph / Social Media Meta Tags -->
+
+    <!-- Open Graph / Social Media Rich Preview Meta Tags -->
     <meta property="og:title" content="Winga Machachali - Soko Kuu la Kuku Tanzania">
     <meta property="og:description" content="Uza kwa uhakika, nunua kwa uaminifu. Soko namba moja la kuku na vifaranga Tanzania.">
     <meta property="og:type" content="website">
+    <meta property="og:url" content="https://mzaramoempire1-hue.github.io/-winga-machachali-website/">
+    <meta property="og:image" content="https://emojicdn.elk.sh/🐓">
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:title" content="Winga Machachali - Soko Kuu la Kuku Tanzania">
+    <meta property="twitter:description" content="Uza kwa uhakika, nunua kwa uaminifu. Soko namba moja la kuku na vifaranga Tanzania.">
+    <meta property="twitter:image" content="https://emojicdn.elk.sh/🐓">
+
     <link rel="stylesheet" href="styles.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -20,7 +28,7 @@
 </head>
 <body>
 
-    <!-- TOP NAVIGATION BAR (MISTARI MITATU, LOGO, CART, TANGAZA, ODA & WASAPU JUU) -->
+    <!-- TOP NAVIGATION BAR -->
     <nav class="navbar">
         <div class="container nav-container">
             <div class="nav-left">
@@ -56,7 +64,7 @@
         </div>
     </nav>
 
-    <!-- SECTION 1: LIVE MARKETPLACE (JUU KABISA - ROW 2 GRID) -->
+    <!-- SECTION 1: LIVE MARKETPLACE -->
     <section id="marketplace" class="marketplace-section hero-top">
         <div class="container">
             <div class="hero-header-banner">
@@ -85,7 +93,7 @@
                 <button class="chip" data-category="Mayai">Mayai</button>
             </div>
 
-            <!-- Listings Grid (SEHEMU MBILI / 2 COLUMNS) -->
+            <!-- Listings Grid -->
             <div id="listingsLoading" class="loading-state">
                 <i class="fas fa-spinner fa-spin"></i> Inapakia matangazo kutoka sokoni...
             </div>
@@ -103,13 +111,13 @@
         <div class="container">
             <div class="section-title">
                 <h2>Weka Tangazo Lako <span>Sokoni</span></h2>
-                <p>Uza kuku, vifaranga, au mayai yako kwa urahisi. Tangazo lako litaonekana moja kwa moja kwenye App na Website na Admin ataliona.</p>
+                <p>Uza kuku, vifaranga, au mayai yako kwa urahisi. Mfumo utaongeza kiotomatiki TZS 1,000 ya huduma kwenye bei ya sokoni.</p>
             </div>
             <div class="form-card">
                 <form id="postChickenForm">
                     <div class="form-row">
                         <div class="form-group">
-                            <label for="postTitle">Kichwa cha Habari (Mf: Kuku wa Kienyeji Milisho ya Asili)</label>
+                            <label for="postTitle">Kichwa cha Habari (Andika maelezo, usiweke namba 7 zilizofuatana)</label>
                             <input type="text" id="postTitle" required placeholder="Weka kichwa cha tangazo...">
                         </div>
                         <div class="form-group">
@@ -126,11 +134,11 @@
                     </div>
                     <div class="form-row">
                         <div class="form-group">
-                            <label for="postPrice">Bei kwa TZS (Mf: 15000)</label>
-                            <input type="number" id="postPrice" required placeholder="Bei ya kuku mmoja...">
+                            <label for="postPrice">Bei kwa TZS (Mfugaji atapokea bei hii)</label>
+                            <input type="number" id="postPrice" required placeholder="Bei ya kuku mmoja au jumla...">
                         </div>
                         <div class="form-group">
-                            <label for="postQuantity">Idadi (Mf: 20)</label>
+                            <label for="postQuantity">Idadi (Mf: 20 au 1000)</label>
                             <input type="text" id="postQuantity" required placeholder="Idadi iliyopo...">
                         </div>
                     </div>
@@ -171,8 +179,8 @@
                         </div>
                     </div>
                     <div class="form-group full-width">
-                        <label for="postDescription">Maelezo ya Ziada</label>
-                        <textarea id="postDescription" rows="3" placeholder="Eleza kwa ufasaha ubora wa kuku wako..."></textarea>
+                        <label for="postDescription">Maelezo ya Ziada (Andika maelezo, usiwahi kuweka namba 7 za simu zilizofuatana)</label>
+                        <textarea id="postDescription" rows="3" placeholder="Eleza kwa ufasaha ubora wa kuku wako bila kuweka namba..."></textarea>
                     </div>
                     <button type="submit" class="btn btn-primary btn-large" style="width: 100%; justify-content: center;">
                         <i class="fas fa-paper-plane"></i> Chapisha Tangazo Sokoni & App
@@ -309,7 +317,7 @@
         </div>
     </div>
 
-    <!-- CONTACT CHOICE MODAL (PIGA SIMU / WHATSAPP) -->
+    <!-- CONTACT CHOICE MODAL -->
     <div id="contactChoiceModal" class="modal-overlay" style="display: none;">
         <div class="modal-card" style="text-align: center;">
             <button id="closeContactChoiceModal" class="modal-close-btn"><i class="fas fa-times"></i></button>
@@ -341,7 +349,7 @@
         </div>
     </div>
 
-    <!-- ADMIN DASHBOARD MODAL (OPENS DIRECTLY WITH 019+02005+01+017) -->
+    <!-- ADMIN DASHBOARD MODAL -->
     <div id="adminDashboardModal" class="modal-overlay" style="display: none;">
         <div class="modal-card" style="max-width: 800px; width: 95%;">
             <button id="closeAdminDashboardModal" class="modal-close-btn"><i class="fas fa-times"></i></button>
@@ -350,7 +358,7 @@
                 <p>Taarifa rasmi 100% kutoka kwenye mfumo wa App & Website</p>
             </div>
 
-            <!-- Stats Summary Cards (Watumiaji, Wageni, Oda, Matangazo) -->
+            <!-- Stats Summary Cards -->
             <div class="admin-stats-grid" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 15px;">
                 <div style="background:#121212; border:1px solid var(--card-border); padding:8px; border-radius:8px; text-align:center;">
                     <span style="font-size:0.7rem; color:var(--text-gray);">Watumiaji</span>
@@ -401,12 +409,11 @@
             <div class="footer-contact">
                 <h4>Mawasiliano na Msaada</h4>
                 <p><i class="fab fa-whatsapp" style="color: #25D366;"></i> WhatsApp / Simu: <a href="javascript:void(0)" onclick="openContactModal('0680234423', 'Winga Machachali Support', 'Admin')" style="color: var(--primary-orange); text-decoration: none;"><strong>0680234423</strong></a></p>
-                <p><i class="fas fa-envelope"></i> Barua pepe: <strong>support@wingamachachali.co.tz</strong></p>
                 <p><i class="fas fa-user-shield"></i> <a href="javascript:void(0)" onclick="openAdminDashboard()" style="color: var(--primary-orange); text-decoration: none;"><strong>Dashibodi ya Admin</strong></a></p>
             </div>
         </div>
         <div class="footer-bottom">
-            <p>&copy; 2026 Winga Machachali. Haki zote zimehifadhiwa. | <a href="privacy.html" style="color: var(--primary-orange); text-decoration: none;">Sera ya Faragha</a></p>
+            <p>&copy; 2026 Winga Machachali. Haki zote zimehifadhiwa.</p>
         </div>
     </footer>
 

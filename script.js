@@ -150,7 +150,7 @@ async function openCartModal() {
         });
 
         if (userOrders.length === 0) {
-            cartOrdersList.innerHTML = "<p style='text-align:center; padding:30px; color:var(--text-gray);'>Huna oda zilizowekwa kwa sasa kwenye kifaa hiki.</p>";
+            cartOrdersList.innerHTML = "<p style='text-align:center; padding:30px; color:var(--text-gray);'>Huna oda zilizowekwa bado kwenye kifaa hiki.</p>";
         } else {
             cartOrdersList.innerHTML = userOrders.map(o => `
                 <div style="background:#121212; border:1px solid var(--card-border); border-radius:10px; padding:15px; margin-bottom:12px;">
@@ -745,27 +745,41 @@ categoriesFilter.querySelectorAll(".chip").forEach(chip => {
     });
 });
 
-// Post Listing Form Handler
+// Post Listing Form Handler with Anti-Phone Validation & +1000 TZS Automatic Markup
 if (postChickenForm) {
     postChickenForm.addEventListener("submit", async (e) => {
         e.preventDefault();
 
         const title = document.getElementById("postTitle").value;
+        const description = document.getElementById("postDescription").value;
+
+        // Anti-spam validation: Reject 7 or more consecutive digits in title or description
+        const consecutiveDigitsRegex = /\d{7,}/;
+        if (consecutiveDigitsRegex.test(title) || consecutiveDigitsRegex.test(description)) {
+            alert("Tafadhali andika maelezo au kichwa cha habari sahihi! Usiweke namba za simu zilizofuatana (7 au zaidi). Weka namba kwenye eneo la namba ya simu pekee.");
+            return;
+        }
+
         const category = document.getElementById("postCategory").value;
-        const price = parseFloat(document.getElementById("postPrice").value) || 0;
-        const quantity = document.getElementById("postQuantity").value;
+        const rawPrice = parseFloat(document.getElementById("postPrice").value) || 0;
+        const quantityStr = document.getElementById("postQuantity").value;
+        const qtyNum = parseInt(quantityStr) || 1;
+
+        // Automatic +1000 TZS Winga markup per item/unit
+        const finalPrice = rawPrice + 1000;
+
         const location = document.getElementById("postLocation").value;
         const farmerName = document.getElementById("postFarmerName").value;
         const farmerPhone = document.getElementById("postFarmerPhone").value || "0680234423";
-        const description = document.getElementById("postDescription").value;
 
         const finalImageUrl = uploadedImageBase64 || "";
 
         const newListing = {
             title,
             category,
-            price,
-            quantity,
+            price: finalPrice, // Automatically marked up by 1000 TZS
+            farmerBasePrice: rawPrice,
+            quantity: quantityStr,
             location,
             imageUrl: finalImageUrl,
             farmerName,
@@ -777,7 +791,7 @@ if (postChickenForm) {
 
         try {
             await addDoc(collection(db, "chickens"), newListing);
-            alert("Tangazo limechapishwa kwa mafanikio pamoja na picha yako! Sasa linaonekana kwenye App na Website.");
+            alert("Tangazo limechapishwa kwa mafanikio! Bei sokoni imeongezewa kiotomatiki TZS 1,000 ya huduma ya Winga.");
             postChickenForm.reset();
             uploadedImageBase64 = "";
             if (imagePreviewBox) imagePreviewBox.style.display = "none";
