@@ -92,6 +92,53 @@ const displayUserGmail = document.getElementById("displayUserGmail");
 const displayUserPhone = document.getElementById("displayUserPhone");
 const logoutBtn = document.getElementById("logoutBtn");
 
+let uploadedAvatarBase64 = "";
+const regWebAvatarFile = document.getElementById("regWebAvatarFile");
+const regAvatarPreviewBox = document.getElementById("regAvatarPreviewBox");
+const regAvatarPreviewImg = document.getElementById("regAvatarPreviewImg");
+
+if (regWebAvatarFile) {
+    regWebAvatarFile.addEventListener("change", (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = function (evt) {
+            const img = new Image();
+            img.onload = function () {
+                const canvas = document.createElement("canvas");
+                const MAX_WIDTH = 400;
+                const MAX_HEIGHT = 400;
+                let width = img.width;
+                let height = img.height;
+
+                if (width > height) {
+                    if (width > MAX_WIDTH) {
+                        height *= MAX_WIDTH / width;
+                        width = MAX_WIDTH;
+                    }
+                } else {
+                    if (height > MAX_HEIGHT) {
+                        width *= MAX_HEIGHT / height;
+                        height = MAX_HEIGHT;
+                    }
+                }
+
+                canvas.width = width;
+                canvas.height = height;
+                const ctx = canvas.getContext("2d");
+                ctx.drawImage(img, 0, 0, width, height);
+
+                uploadedAvatarBase64 = canvas.toDataURL("image/jpeg", 0.8);
+                if (regAvatarPreviewImg) regAvatarPreviewImg.src = uploadedAvatarBase64;
+                if (regAvatarPreviewBox) regAvatarPreviewBox.style.display = "block";
+            };
+            img.src = evt.target.result;
+        };
+        reader.readAsDataURL(file);
+    });
+}
+
 if (menuToggleBtn && profileModal) {
     menuToggleBtn.addEventListener("click", async () => {
         profileModal.style.display = "flex";
@@ -119,6 +166,11 @@ if (menuToggleBtn && profileModal) {
         } else {
             if (registrationSection) registrationSection.style.display = "block";
             if (userInfoSection) userInfoSection.style.display = "none";
+            const savedGmail = localStorage.getItem("winga_web_gmail");
+            const regWebGmailInput = document.getElementById("regWebGmail");
+            if (regWebGmailInput && savedGmail && !regWebGmailInput.value) {
+                regWebGmailInput.value = savedGmail;
+            }
         }
     });
 }
@@ -854,12 +906,14 @@ if (webRegisterForm) {
         const gmail = document.getElementById("regWebGmail").value;
         const phone = document.getElementById("regWebPhone").value;
         const location = document.getElementById("regWebLocation").value;
-        const avatarUrl = document.getElementById("regWebAvatar").value;
+        const avatarUrl = uploadedAvatarBase64 || "";
 
         if (!fullName || !gmail || !phone || !location) {
             alert("Tafadhali jaza taarifa zote muhimu!");
             return;
         }
+
+        localStorage.setItem("winga_web_gmail", gmail);
 
         const userData = {
             fullName,
