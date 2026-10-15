@@ -81,21 +81,44 @@ const adminOrdersCount = document.getElementById("adminOrdersCount");
 const adminShippedCount = document.getElementById("adminShippedCount");
 const adminListingsCount = document.getElementById("adminListingsCount");
 
-// Toggle Nav Menu on Mobile
-if (menuToggleBtn && navLinks) {
-    menuToggleBtn.addEventListener("click", () => {
-        if (navLinks.style.display === "flex") {
-            navLinks.style.display = "none";
+// Profile Modal & Half-Screen Menu Elements (Three lines button opens profile/registration sheet)
+const profileModal = document.getElementById("profileModal");
+const closeProfileModal = document.getElementById("closeProfileModal");
+const registrationSection = document.getElementById("registrationSection");
+const userInfoSection = document.getElementById("userInfoSection");
+const webRegisterForm = document.getElementById("webRegisterForm");
+const displayUserName = document.getElementById("displayUserName");
+const displayUserGmail = document.getElementById("displayUserGmail");
+const displayUserPhone = document.getElementById("displayUserPhone");
+const logoutBtn = document.getElementById("logoutBtn");
+
+if (menuToggleBtn && profileModal) {
+    menuToggleBtn.addEventListener("click", async () => {
+        profileModal.style.display = "flex";
+        const savedPhone = localStorage.getItem("winga_web_phone");
+        if (savedPhone) {
+            try {
+                const userDocRef = doc(db, "users", savedPhone);
+                const userDoc = await getDoc(userDocRef);
+                if (userDoc.exists()) {
+                    const data = userDoc.data();
+                    if (displayUserName) displayUserName.textContent = data.fullName || "Mtumiaji wa Winga";
+                    if (displayUserGmail) displayUserGmail.textContent = data.gmail || "Haijawekwa Gmail";
+                    if (displayUserPhone) displayUserPhone.textContent = data.phone || savedPhone;
+                    if (registrationSection) registrationSection.style.display = "none";
+                    if (userInfoSection) userInfoSection.style.display = "block";
+                } else {
+                    if (registrationSection) registrationSection.style.display = "block";
+                    if (userInfoSection) userInfoSection.style.display = "none";
+                }
+            } catch (e) {
+                console.error("Error loading user profile:", e);
+                if (registrationSection) registrationSection.style.display = "block";
+                if (userInfoSection) userInfoSection.style.display = "none";
+            }
         } else {
-            navLinks.style.display = "flex";
-            navLinks.style.flexDirection = "column";
-            navLinks.style.position = "absolute";
-            navLinks.style.top = "60px";
-            navLinks.style.left = "0";
-            navLinks.style.width = "100%";
-            navLinks.style.backgroundColor = "#1E1E1E";
-            navLinks.style.padding = "20px";
-            navLinks.style.boxShadow = "0 10px 20px rgba(0,0,0,0.5)";
+            if (registrationSection) registrationSection.style.display = "block";
+            if (userInfoSection) userInfoSection.style.display = "none";
         }
     });
 }
@@ -624,6 +647,12 @@ if (closeContactChoiceModal) {
 
 // Open Order Modal
 window.openOrderModal = function(id, title, price) {
+    const savedPhone = localStorage.getItem("winga_web_phone");
+    if (!savedPhone) {
+        alert("Tafadhali jisajili kwanza kabla ya kununua bidhaa!");
+        if (profileModal) profileModal.style.display = "flex";
+        return;
+    }
     orderChickenId.value = id;
     orderChickenTitleHidden.value = title;
     orderPricePerUnit.value = price;
@@ -750,6 +779,13 @@ if (postChickenForm) {
     postChickenForm.addEventListener("submit", async (e) => {
         e.preventDefault();
 
+        const savedPhone = localStorage.getItem("winga_web_phone");
+        if (!savedPhone) {
+            alert("Tafadhali jisajili kwanza kabla ya kutangaza bidhaa!");
+            if (profileModal) profileModal.style.display = "flex";
+            return;
+        }
+
         const title = document.getElementById("postTitle").value;
         const description = document.getElementById("postDescription").value;
 
@@ -802,6 +838,70 @@ if (postChickenForm) {
             console.error("Error adding document: ", error);
             alert("Kimetokea kitu kibaya wakati wa kuchapisha tangazo. Tafadhali jaribu tena.");
         }
+    });
+}
+
+if (closeProfileModal && profileModal) {
+    closeProfileModal.addEventListener("click", () => {
+        profileModal.style.display = "none";
+    });
+}
+
+if (webRegisterForm) {
+    webRegisterForm.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const fullName = document.getElementById("regWebFullName").value;
+        const gmail = document.getElementById("regWebGmail").value;
+        const phone = document.getElementById("regWebPhone").value;
+        const location = document.getElementById("regWebLocation").value;
+        const avatarUrl = document.getElementById("regWebAvatar").value;
+
+        if (!fullName || !gmail || !phone || !location) {
+            alert("Tafadhali jaza taarifa zote muhimu!");
+            return;
+        }
+
+        const userData = {
+            fullName,
+            gmail,
+            phone,
+            location,
+            avatarUrl,
+            role: "Mnunuzi",
+            createdAt: Date.now()
+        };
+
+        try {
+            await setDoc(doc(db, "users", phone), userData);
+            localStorage.setItem("winga_web_phone", phone);
+            alert("Usajili umekamilika kwa mafanikio!");
+            if (displayUserName) displayUserName.textContent = fullName;
+            if (displayUserGmail) displayUserGmail.textContent = gmail;
+            if (displayUserPhone) displayUserPhone.textContent = phone;
+            if (registrationSection) registrationSection.style.display = "none";
+            if (userInfoSection) userInfoSection.style.display = "block";
+        } catch (err) {
+            console.error("Error registering user:", err);
+            alert("Hitilafu katika kusajili. Jaribu tena.");
+        }
+    });
+}
+
+if (logoutBtn) {
+    logoutBtn.addEventListener("click", () => {
+        localStorage.removeItem("winga_web_phone");
+        alert("Umetoka kwenye akaunti.");
+        if (registrationSection) registrationSection.style.display = "block";
+        if (userInfoSection) userInfoSection.style.display = "none";
+    });
+}
+
+if (logoutBtn) {
+    logoutBtn.addEventListener("click", () => {
+        localStorage.removeItem("winga_web_phone");
+        alert("Umetoka kwenye akaunti.");
+        registrationSection.style.display = "block";
+        userInfoSection.style.display = "none";
     });
 }
 

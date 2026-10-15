@@ -644,6 +644,25 @@ body {
     box-shadow: 0 20px 50px rgba(0,0,0,0.8);
 }
 
+.half-screen-sheet {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    max-width: 100% !important;
+    height: 50vh;
+    border-bottom-left-radius: 20px;
+    border-bottom-right-radius: 20px;
+    border-top-left-radius: 0;
+    border-top-right-radius: 0;
+    animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+    from { transform: translateY(-100%); }
+    to { transform: translateY(0); }
+}
+
 .modal-close-btn {
     position: absolute;
     top: 12px;
